@@ -1,0 +1,37 @@
+#otpdetails{
+    width: 601px;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    justify-content: center;
+    align-items: center;
+    background-color: #D4D7E3;
+    font-family: 'Inter',sans-serif;
+}
+#otp_image{
+    display: flex;
+    align-items: center;
+    flex-grow: 1;
+    justify-content: center;
+    background-color: #242531;
+}
+#otp_image_1{
+    width: 698px;
+    height: 524px;
+}
+#otp_validation_input{
+    padding: 8px;
+    border: 1px solid white;
+    border-radius: 8px;
+}
+#otp_validation_form{
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    width: 60%;
+}
+#otp_validation_input::placeholder{
+    color: #9A9A9A;
+    
+}

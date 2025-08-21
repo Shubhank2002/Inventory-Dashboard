@@ -1,0 +1,21 @@
+#productsummarycontainer{
+    display: flex;
+    flex-direction: column;
+    width: 316px;
+    background-color: white;
+    border-radius: 20px;
+    padding-bottom: 5px;
+}
+.productimagepara{
+    display: flex;
+    flex-direction: column;
+}
+.productpara{
+    display: flex;
+    flex-direction: column;
+    font-size: 14px;
+    gap: 3px;
+}
+.productpara p{
+    margin: 0;
+}

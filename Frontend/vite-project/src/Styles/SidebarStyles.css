@@ -1,0 +1,34 @@
+#Sidebar_container{
+    width: 220px;
+    background-color: #242531;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+#sidebar_image{
+    margin-top: 10px;
+    margin-left: 10px;
+    margin-bottom: 6px;
+    align-items: flex-start;
+    width: fit-content;
+}
+#sidebar_toogle_container{
+    margin: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.toogle_container{
+    display: flex;
+    gap:8px;
+    color: white;
+    font-family: "Inter",sans-serif;
+    align-items: center;
+    border-radius: 18px;
+    padding: 6px;
+    
+    cursor: pointer;
+}
+.toogle_container:hover{
+    background-color: #424457;
+}

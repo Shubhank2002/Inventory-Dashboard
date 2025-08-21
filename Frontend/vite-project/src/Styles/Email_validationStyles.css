@@ -1,0 +1,31 @@
+#email_validation_container{
+    display: flex;
+    width: 100vw;
+}
+#email_validation_details{
+    background-color: #D4D7E3;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 18px;
+    height: 100vh;
+    width: 601px;
+    font-family: 'Inter',sans-serif;
+}
+#email_validation_image{
+    display: flex;
+    justify-content: start;
+    align-items: center;
+    flex-grow: 1;
+    background-color: #000640;
+}
+#Email_validation_form{
+    display: flex;
+    flex-direction: column;
+    width: 60%;
+    gap: 20px;
+}
+#Email_validation_input::placeholder{
+    color: #9A9A9A;
+}

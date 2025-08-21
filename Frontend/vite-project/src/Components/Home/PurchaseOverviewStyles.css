@@ -1,0 +1,24 @@
+#purchaseoverviewcontainer{
+    display: flex;
+    flex-direction: column;
+    width: 820px;
+    background-color: white;
+    font-family: "Inter",sans-serif;
+    border-radius: 20px;
+}
+#purchaseimagepara{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    
+    
+}
+#purchasepara{
+    display: flex;
+    gap: 15px;
+    font-size: 14px;
+    
+}
+#purchasepara p{
+    margin-top: 8px;
+}

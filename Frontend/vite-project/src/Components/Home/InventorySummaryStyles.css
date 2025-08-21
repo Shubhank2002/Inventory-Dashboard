@@ -1,0 +1,14 @@
+#inventorysummarycontainer{
+    display: flex;
+    flex-direction: column;
+    background-color: white;
+    border-radius: 20px;
+    width: 316px;
+    padding-bottom: 5px;
+}
+.inventoryimagepara{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+}

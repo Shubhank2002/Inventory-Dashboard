@@ -1,0 +1,39 @@
+#home_container{
+    display: flex;
+    font-family: 'Inter',sans-serif;
+    background-color: #424457;
+    width: 100vw;
+}
+#right_part{
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    background-color: #424457;
+   
+}
+#right_part_1{
+    
+    
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+  
+}
+#right_part1{
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+#right_part2{
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+#right_first_div{
+    display: flex;
+    padding: 3px 18px;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 2px solid white;
+    margin-bottom: 10px;
+}
