@@ -54,6 +54,10 @@ const Sidebar = () => {
           <div>Setting</div>
         </div>
       </div>
+      <div className="bottomsidebarcontainer">
+        <div id="bottomsidebarcircle"></div>
+        <div style={{color:'white',fontSize:'16px'}}>Sarthak</div>
+      </div>
     </div>
   );
 };

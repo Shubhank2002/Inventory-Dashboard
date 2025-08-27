@@ -2,7 +2,7 @@ const mongoose=require('mongoose')
 
 const ConnectDB=async()=>{
     try {
-        await mongoose.connect("mongodb+srv://Shubhank:Shubhank123@cluster0.lyeceaa.mongodb.net/inventory")
+        await mongoose.connect(process.env.MONGO_URL)
         console.log('connection established')
     } catch (error) {
         console.log(error.message)

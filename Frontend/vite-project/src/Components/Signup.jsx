@@ -1,14 +1,65 @@
-import React from "react";
-import { Link } from "react-router-dom";
-import '../Styles/SignupStyles.css'
+import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import "../Styles/SignupStyles.css";
+import axios from "axios";
 
 const Signup = () => {
+  const [Form, setForm] = useState({
+    name: "",
+    email: "",
+    password: "",
+    confirm_password: "",
+  });
+  const [Errmsg, setErrmsg] = useState("");
+  const [loading, setloading] = useState(false)
+  const navigate=useNavigate()
+
+  const handleChange=(e)=>{
+    const {name,value}=e.target
+    setForm((prev)=>({
+      ...prev,[name]:value
+    }))
+  }
+
+  const handleSignup = async (e) => {
+    e.preventDefault();
+    if(loading){ return;}
+    setErrmsg('')
+      if(Form.confirm_password!==Form.password){
+        return setErrmsg('Password should match with confirm password')
+      }
+      if(Form.password.length<8){
+        return setErrmsg('Password Should contain at least 8 characters')
+      }
+      if(!Form.name.trim() || !Form.password.trim() || !Form.email.trim()){
+        return setErrmsg('Name or Email or Passwords fields cannot be leaved empty')
+      }
+      setloading(true)
+      try {
+        const payload={name:Form.name.trim(),password:Form.password,email:Form.email.trim().toLowerCase()}
+        const { data } = await axios.post(
+          "http://localhost:8000/auth/signup",
+          payload
+        );
+        if(data?.success){
+          navigate('/')
+        }else{
+          setErrmsg('signup failed')
+        }
+      } catch (error) {
+        setErrmsg(error?.message || 'something went wrong..' )
+        
+      }finally{
+        setloading(false)
+      }
+    
+  };
   return (
     <div id="signup_container">
       <div id="signup_details">
         <h1 id="signup_heading">Create an account</h1>
         <h3 id="signup_subheading">Start inventory management</h3>
-        <form action="" id="signupform">
+        <form action="" id="signupform" onSubmit={handleSignup}>
           <div className="signupdiv">
             <label htmlFor="" className="signuplabel">
               Name
@@ -16,9 +67,10 @@ const Signup = () => {
             <input
               type="text"
               name="name"
-              id=""
+              value={Form.name}
               placeholder="Name"
               className="signup_input"
+              onChange={handleChange}
             />
           </div>
           <div className="signupdiv">
@@ -28,9 +80,10 @@ const Signup = () => {
             <input
               type="email"
               name="email"
-              id=""
+              value={Form.email}
               placeholder="Example@gmail.com"
               className="signup_input"
+              onChange={handleChange}
             />
           </div>
           <div className="signupdiv">
@@ -40,9 +93,10 @@ const Signup = () => {
             <input
               type="password"
               name="password"
-              id=""
+              value={Form.password}
               placeholder="at least 8 characters"
               className="signup_input"
+              onChange={handleChange}
             />
           </div>
           <div className="signupdiv">
@@ -51,20 +105,27 @@ const Signup = () => {
             </label>
             <input
               type="password"
-              name=""
-              id=""
+              name="confirm_password"
+              value={Form.confirm_password}
               placeholder="at least 8 characters"
               className="signup_input"
+              onChange={handleChange}
+              
             />
           </div>
-          
-          <button id="signup_button">Sign in</button>
+          {Errmsg && (
+            <div style={{ color: "crimson", marginTop: 8, fontSize: 14 }}>{Errmsg}</div>
+          )}
+
+          <button id="signup_button" type="submit" disabled={loading}>
+            {loading?'Signing up...':'Sign up'}
+          </button>
         </form>
         <div style={{ marginTop: "20px" }}>
           <span>Already have an account? </span>
           <Link
             style={{ textDecoration: "none", fontSize: "16px", color: "blue" }}
-            to='/'
+            to="/"
           >
             Sign in
           </Link>

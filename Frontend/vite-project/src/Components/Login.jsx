@@ -1,14 +1,58 @@
-import React from "react";
+import React, { useContext, useState } from "react";
 import "../Styles/LoginStyles.css";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import axios from 'axios'
+import { Data } from "../Context/UserContext";
 
 const Login = () => {
+  const [Form, setForm] = useState({password:'',email:''})
+  const {UserName,setUserName} =useContext(Data)
+  const [Errmsg, setErrmsg] = useState('')
+  const [loading, setloading] = useState(false)
+  const navigate=useNavigate()
+
+
+  const handleChange=(e)=>{
+    const {name,value}=e.target
+    setForm({
+      ...Form,[name]:value
+    })
+  }
+  const handleSignin=async(e)=>{
+    e.preventDefault()
+    setErrmsg('')
+    if(!Form.email.trim() || !Form.password.trim()){
+      return setErrmsg('Email or Password fields cannot be leaved empty')
+    }
+    setloading(true)
+    try {
+      const payload={email:Form.email.trim().toLowerCase(),password:Form.password}
+      const {data}=await axios.post('http://localhost:8000/auth/login',Form)
+      if(data?.success){
+        setUserName(data.name)
+        navigate('/dashboard/home')
+      }else{
+        setErrmsg('Sign in failed')
+      }
+    } catch (error) {
+      console.log(error?.response?.data?.message)
+      if(error?.response?.status===401){
+        return setErrmsg(error.response.data.message || 'Invalid Credentials')
+      }
+      setErrmsg(error?.response?.data?.message || "Something went wrong...")
+      
+    }finally{
+      setloading(false)
+    }
+  }  
+  
+  
   return (
     <div id="login_container">
       <div id="login_details">
         <h1 id="login_heading">Log in to your account</h1>
         <h3 id="subheading">Welcome back! Please enter your details</h3>
-        <form action="" id="loginform">
+        <form action="" id="loginform" onSubmit={handleSignin}>
           <div className="logindiv">
             <label htmlFor="" className="loginlabel">
               Email
@@ -16,7 +60,9 @@ const Login = () => {
             <input
               type="email"
               name="email"
-              id=""
+              value={Form.email}
+              onChange={handleChange}
+              
               placeholder="Example@gmail.com"
               className="login_input"
             />
@@ -28,7 +74,9 @@ const Login = () => {
             <input
               type="password"
               name="password"
-              id=""
+              value={Form.password}
+              onChange={handleChange}
+              
               placeholder="at least 8 characters"
               className="login_input"
             />
@@ -45,7 +93,10 @@ const Login = () => {
               Forgot password?
             </Link>
           </div>
-          <button id="login_button">Sign in</button>
+          <button id="login_button" type="submit" disabled={loading}>{loading?'Signing in':'Sign in'}</button>
+          {Errmsg && (
+            <div style={{fontSize:'14px',color:'crimson',marginTop:'12px'}}>{Errmsg}</div>
+          )} 
         </form>
         <div style={{ marginTop: "20px" }}>
           <span>Don't you have an account? </span>
