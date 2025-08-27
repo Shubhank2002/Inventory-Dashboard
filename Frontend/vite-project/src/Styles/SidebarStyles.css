@@ -29,6 +29,17 @@
     
     cursor: pointer;
 }
+.selectedtoogle_container{
+    display: flex;
+    gap:8px;
+    color: white;
+    font-family: "Inter",sans-serif;
+    align-items: center;
+    border-radius: 18px;
+    padding: 6px;
+    background-color: #424457;
+    cursor: pointer;
+}
 .toogle_container:hover{
     background-color: #424457;
 }

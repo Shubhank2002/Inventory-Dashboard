@@ -15,7 +15,7 @@ const Searchere = () => {
         }}
       >
         <button style={{cursor:'pointer',backgroundColor:'inherit'}}>
-          <img src="Home_assets/search_icon.png" alt="" />
+          <img src="/Home_assets/search_icon.png" alt="" />
         </button>
         <input
           type="text"

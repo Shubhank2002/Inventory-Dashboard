@@ -1,0 +1,32 @@
+#statisticscontainer{
+    display: flex;
+    width: 100vw;
+}
+#statisticsrightpart{
+    display: flex;
+    flex-direction: column;
+    gap: 35px;
+    flex-grow: 1;
+    background-color: #424457;
+    font-family: "Poppins",sans-serif;
+}
+#statisticstopdiv{
+    display: flex;
+    padding: 3px 45px;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 2px solid white;
+}
+#Statisticsseconddiv{
+    display: flex;
+    margin: 0px 35px;
+    justify-content: space-evenly;
+}
+.statisticscolorbox{
+    width: 360px;
+    height: 150px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    
+}

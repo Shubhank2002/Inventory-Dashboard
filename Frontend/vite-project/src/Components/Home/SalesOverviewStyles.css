@@ -22,3 +22,8 @@
 .para_container p{
     margin-top: 7px;
 }
+
+.salesimagecontainer:hover{
+    transform: scale(1.2);
+    cursor: pointer;
+}

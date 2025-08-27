@@ -19,3 +19,7 @@
 .productpara p{
     margin: 0;
 }
+.productimagecontainer:hover{
+    transform: scale(1.2);
+    cursor: pointer;
+}

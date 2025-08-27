@@ -1,0 +1,17 @@
+#settingcontainer{
+    display: flex;
+    width: 100vw;
+    font-family: "Inter",sans-serif;
+}
+
+#settingupperdiv{
+    padding: 3px 15px;
+    border-bottom: 2px solid white;
+}
+#settingrightpart{
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    background-color: #424457;
+    gap: 5px;
+}

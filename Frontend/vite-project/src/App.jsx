@@ -9,6 +9,8 @@ import Email_validation from './Components/Forgot_password/Email_validation'
 import Otp_validation from './Components/Forgot_password/Otp_validation'
 import Create_New_password from './Components/Forgot_password/Create_New_password'
 import Home from './Components/Home/Home'
+import Setting from './Components/Setting/Setting'
+import Dashboard from './Components/Dashboard'
 
 function App() {
   
@@ -23,6 +25,8 @@ function App() {
           <Route path='/otp_validation' element={<Otp_validation/>}/>
           <Route path='/create_new_password' element={<Create_New_password/>}/>
           <Route path='/home' element={<Home/>}/>
+          <Route path='/setting' element={<Setting/>}/>
+          <Route path='/dashboard/:name' element={<Dashboard/>}/>
         </Routes>
       </Router>
     </>

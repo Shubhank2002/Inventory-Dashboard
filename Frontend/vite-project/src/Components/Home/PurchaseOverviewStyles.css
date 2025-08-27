@@ -22,3 +22,7 @@
 #purchasepara p{
     margin-top: 8px;
 }
+.purchaseimagecontainer:hover{
+    transform: scale(1.2);
+    cursor: pointer;
+}

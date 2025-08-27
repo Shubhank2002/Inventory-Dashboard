@@ -12,3 +12,7 @@
     align-items: center;
     gap: 3px;
 }
+.inventoryimagecontainer:hover{
+    transform: scale(1.2);
+    cursor: pointer;
+}

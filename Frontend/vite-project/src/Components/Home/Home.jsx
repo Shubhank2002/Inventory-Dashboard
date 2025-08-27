@@ -13,7 +13,7 @@ const Home = () => {
       <Sidebar />
       <div id="right_part">
         <div id="right_first_div">
-          <h1 style={{fontSize:'20px',color:'white',margin:'7px 0'}}>Home</h1>
+          <h1 style={{fontSize:'20px',color:'white',margin:'10px 0'}}>Home</h1>
           <Searchere/>
         </div>
         

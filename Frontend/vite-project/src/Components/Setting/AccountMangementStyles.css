@@ -1,0 +1,17 @@
+#accountmanagementcontainer{
+    font-family: "Poppins",sans-serif;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    
+}    
+
+#checkboxcontainer{
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    width: 605px;
+}
+#accountverifiedcontainer{
+    width: 600px;
+}
