@@ -4,6 +4,7 @@ const AuthRouter=express.Router()
 
 AuthRouter.post('/login',LoginUser)
 AuthRouter.post('/signup',SignupUser)
+AuthRouter.post('/forgot-password',)
 
 
 module.exports=AuthRouter

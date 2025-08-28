@@ -6,7 +6,7 @@ import { useNavigate, useParams } from "react-router-dom";
 const Sidebar = () => {
   const {selected,setselected}=useContext(Data)
   const navigate=useNavigate()
-
+    const {UserName,setUserName}=useContext(Data)
     const {name}=useParams()
 
     const handleClick=(render_name)=>{
@@ -56,7 +56,7 @@ const Sidebar = () => {
       </div>
       <div className="bottomsidebarcontainer">
         <div id="bottomsidebarcircle"></div>
-        <div style={{color:'white',fontSize:'16px'}}>Sarthak</div>
+        <div style={{color:'white',fontSize:'14px'}}>{UserName}</div>
       </div>
     </div>
   );
