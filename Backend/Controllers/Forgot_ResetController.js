@@ -19,6 +19,7 @@ const forgotPassword = async (req, res) => {
     if (!User) {
       return res.status(200).json({
         success: true,
+        otpSent:false,
         message: "If the email exists, an OTP has been sent",
       });
     }
@@ -47,7 +48,7 @@ const forgotPassword = async (req, res) => {
     }
     res
       .status(200)
-      .json({ success: true, message: "if the email exists,then otp is sent" });
+      .json({ success: true, message: "if the email exists,then otp is sent",otpSent:true });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
