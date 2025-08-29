@@ -11,6 +11,7 @@ import Create_New_password from './Components/Forgot_password/Create_New_passwor
 import Home from './Components/Home/Home'
 import Setting from './Components/Setting/Setting'
 import Dashboard from './Components/Dashboard'
+import IndividualProduct from './Components/Product/IndividualProduct'
 
 function App() {
   
@@ -27,6 +28,7 @@ function App() {
           <Route path='/home' element={<Home/>}/>
           <Route path='/setting' element={<Setting/>}/>
           <Route path='/dashboard/:name' element={<Dashboard/>}/>
+          <Route path='/dashboard/:name/individual-product' element={<IndividualProduct/>}/>
         </Routes>
       </Router>
     </>

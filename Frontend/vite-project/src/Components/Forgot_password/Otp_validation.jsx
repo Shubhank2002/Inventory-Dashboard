@@ -44,7 +44,7 @@ const Otp_validation = () => {
             <label htmlFor="" style={{textAlign:'left',fontWeight:'600'}}>OTP</label>
             <input type="text" placeholder="xxxx05" id="otp_validation_input" value={otp} onChange={(e)=>setotp(e.target.value)}/>
           </div>
-          <button type="submit" disabled={loading} style={{borderRadius:'10px',cursor:'pointer',backgroundColor:'#242531',color:'white',padding:'8px',cursor:'pointer'}}>{loading?'Confirming':"Confirm"}</button>
+          <button type="submit" disabled={loading} style={{borderRadius:'10px',cursor:'pointer',backgroundColor:'#242531',color:'white',padding:'8px'}}>{loading?'Confirming':"Confirm"}</button>
         </form>
         {errMsg && (
           <div style={{fontSize:"16px",color:'crimson'}}>{errMsg}</div>
