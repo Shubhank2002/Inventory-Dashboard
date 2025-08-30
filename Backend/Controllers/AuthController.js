@@ -3,8 +3,8 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const UserModel = require("../Models/UserModel");
 
-const createToken = (email) => {
-  const token = jwt.sign({ email }, process.env.SECRET_KEY, {
+const createToken = (email,userId) => {
+  const token = jwt.sign({ email,userd }, process.env.SECRET_KEY, {
     expiresIn: "2h",
   });
   return token;
@@ -33,7 +33,7 @@ const LoginUser = async (req, res) => {
         message: "email or password is incorrect or both",
       });
     }
-    const token = createToken(email);
+    const token = createToken(email,userFound._id);
     res
       .status(200)
       .json({ success: true, message: "Login Successfully", token,name:userFound.name });

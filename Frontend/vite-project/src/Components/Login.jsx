@@ -36,6 +36,7 @@ const Login = () => {
       );
       if (data?.success) {
         setUserName(data.name);
+        localStorage.setItem('token',JSON.stringify(data.token))
         navigate("/dashboard/home");
       } else {
         setErrmsg("Sign in failed");
