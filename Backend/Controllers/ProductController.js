@@ -12,7 +12,7 @@ const CreateSingleProduct = async (req, res) => {
     unit,
     productId,
   } = req.body;
-
+   const userId = req.user.userId; 
   if (!name || price == null) {
     if (req.file) fs.unlinkSync(req.file.path);
     return res
@@ -55,6 +55,7 @@ const CreateSingleProduct = async (req, res) => {
       productId,
       imageName,
       imageUrl,
+      owner: userId,
     });
     res.status(201).json({ success: true, data: newDoc });
   } catch (error) {
@@ -69,7 +70,7 @@ const CreateMultipleProducts = async (req, res) => {
       .status(400)
       .json({ success: false, message: "CSV file is required" });
   }
-
+  const userId = req.user.userId;
   const filePath = req.file.path;
   const rawRows = [];
 
@@ -94,6 +95,7 @@ const CreateMultipleProducts = async (req, res) => {
                 ? Number(r.threshold)
                 : 0,
             expiryDate: r.expiryDate ? new Date(r.expiryDate) : undefined,
+            owner: userId,
           };
           return o;
         };
@@ -136,7 +138,7 @@ const CreateMultipleProducts = async (req, res) => {
         // 4) Filter out productIds that already exist in DB
         const ids = normalized.map((x) => x.productId);
         const existingDocs = await ProductModel.find(
-          { productId: { $in: ids } },
+          { productId: { $in: ids },owner: userId },
           { productId: 1, _id: 0 }
         ).lean();
 
@@ -225,5 +227,35 @@ const CreateMultipleProducts = async (req, res) => {
         });
     });
 };
+const getProducts = async (req, res) => {
+  try {
+    const userId = req.user.userId; // from auth middleware
+    const { search, page = 1, limit = 10 } = req.query;
 
-module.exports = { CreateSingleProduct, CreateMultipleProducts };
+    const query = { owner: userId }; // each user sees only their own products
+    if (search) {
+      query.name = { $regex: search, $options: "i" }; // case-insensitive search
+    }
+
+    const total = await ProductModel.countDocuments(query);
+    const products = await ProductModel.find(query)
+      .sort({ createdAt: -1 })
+      .skip((page - 1) * parseInt(limit))
+      .limit(parseInt(limit));
+
+    res.json({
+      success: true,
+      data: products,
+      pagination: {
+        total,
+        page: parseInt(page),
+        pages: Math.ceil(total / limit),
+      },
+    });
+  } catch (err) {
+    console.error("getProducts:", err);
+    res.status(500).json({ success: false, message: "Internal Server Error" });
+  }
+};
+
+module.exports = { CreateSingleProduct, CreateMultipleProducts,getProducts };

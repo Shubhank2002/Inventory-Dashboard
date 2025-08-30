@@ -32,6 +32,11 @@ const ProductSchema = new mongoose.Schema(
       index: true,
     },
     imageUrl: { type: String, trim: true },
+    owner: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
   },
   { timestamps: true }
 );
@@ -52,6 +57,6 @@ ProductSchema.virtual("availability").get(function () {
 ProductSchema.set("toJSON", { virtuals: true });
 ProductSchema.set("toObject", { virtuals: true });
 
-const ProductModel = new mongoose.model("product", ProductSchema);
+const ProductModel = new mongoose.model("Product", ProductSchema);
 
 module.exports = ProductModel;

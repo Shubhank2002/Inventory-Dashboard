@@ -4,7 +4,7 @@ const jwt = require("jsonwebtoken");
 const UserModel = require("../Models/UserModel");
 
 const createToken = (email,userId) => {
-  const token = jwt.sign({ email,userd }, process.env.SECRET_KEY, {
+  const token = jwt.sign({ email,userId }, process.env.SECRET_KEY, {
     expiresIn: "2h",
   });
   return token;

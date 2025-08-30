@@ -57,8 +57,11 @@ const Product = () => {
     try {
       const fd = new FormData();
       fd.append("file", csvFile);
+      const jsontoken = localStorage.getItem("token");
+          const token = JSON.parse(jsontoken);
+          const headers = { Authorization: `Bearer ${token}` };
       // TODO: point to your backend route
-      const res=await axios.post('http://localhost:8000/product/multiple',fd)
+      const res=await axios.post('http://localhost:8000/product/multiple',fd,{headers})
       if (!res.data.success) throw new Error(res.data?.message || "Upload failed");
       alert(res.data.message || "Uploaded!");
       closeDialog2();

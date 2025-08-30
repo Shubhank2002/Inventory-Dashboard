@@ -61,11 +61,15 @@ const IndividualProduct = () => {
     newForm.append('threshold',Number(form.threshold))
     newForm.append('unit',form.unit.trim().toLowerCase())
     newForm.append('productId',form.productId)
+
     if(imageFile){
         newForm.append('image',imageFile)
     }
     try {
-        const {data,status}=await axios.post('http://localhost:8000/product/single',newForm)
+        const jsontoken = localStorage.getItem("token");
+          const token = JSON.parse(jsontoken);
+          const headers = { Authorization: `Bearer ${token}` };
+        const {data,status}=await axios.post('http://localhost:8000/product/single',newForm,{headers})
         if(!data.success){
             throw new Error('Upload Failed')
         }
