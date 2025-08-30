@@ -45,15 +45,22 @@ const Product = () => {
     setshowDialog2(true)
   }
  const onBrowse = () => fileInputRef.current?.click();
+ const handleFiles = (files) => {
+  const f = files?.[0];
+  const err = validateCSV(f);
+  setCsvError(err || "");
+  if (!err) setCsvFile(f);
+};
+
  const uploadCSV = async () => {
     if (!csvFile) return setCsvError("Choose a CSV first");
     try {
       const fd = new FormData();
       fd.append("file", csvFile);
       // TODO: point to your backend route
-      const res=await axios.post('http://localhost:8000/product/multiple')
-      if (!res.ok) throw new Error(data?.message || "Upload failed");
-      alert(data.message || "Uploaded!");
+      const res=await axios.post('http://localhost:8000/product/multiple',fd)
+      if (!res.data.success) throw new Error(res.data?.message || "Upload failed");
+      alert(res.data.message || "Uploaded!");
       closeDialog2();
     } catch (err) {
       setCsvError(err.message);
