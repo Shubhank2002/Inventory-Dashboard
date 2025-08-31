@@ -9,9 +9,15 @@ const ProductSchema = new mongoose.Schema(
       index: true,
     },
     price: {
-      type: Number,
+      type: Number, // Selling price
       required: true,
       min: 0,
+    },
+    costPrice: {
+      type: Number, // Purchase cost price
+      required: true,
+      min: 0,
+      default: 0,
     },
     quantity: {
       type: Number,
@@ -19,7 +25,12 @@ const ProductSchema = new mongoose.Schema(
       min: 0,
       default: 0,
     },
-    threshold: { type: Number, required: true, min: 0, default: 0 },
+    threshold: {
+      type: Number,
+      required: true,
+      min: 0,
+      default: 0,
+    },
     expiryDate: { type: Date }, // optional
     category: { type: String, trim: true },
     imageName: String,
@@ -40,6 +51,8 @@ const ProductSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+
+// Pre-save clean-up
 ProductSchema.pre("save", function (next) {
   if (this.name) this.name = this.name.trim();
   if (this.productId) this.productId = this.productId.trim();
@@ -47,6 +60,8 @@ ProductSchema.pre("save", function (next) {
   if (this.unit) this.unit = this.unit.trim();
   next();
 });
+
+// Virtual availability status
 ProductSchema.virtual("availability").get(function () {
   if (this.expiryDate && this.expiryDate < new Date()) return "Expired";
   if (this.quantity === 0) return "Out of Stock";

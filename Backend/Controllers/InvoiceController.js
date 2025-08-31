@@ -1,5 +1,6 @@
 const InvoiceModel = require("../Models/InvoiceModel");
 const ProductModel = require("../Models/ProductModel");
+const mongoose = require("mongoose");
 
 // 🟢 1. Create Invoice
 const CreateInvoice = async (req, res) => {
@@ -8,12 +9,10 @@ const CreateInvoice = async (req, res) => {
     const { items } = req.body; // [{ productId, quantity }, ...]
 
     if (!items || !Array.isArray(items) || items.length === 0) {
-      return res
-        .status(400)
-        .json({
-          success: false,
-          message: "Invoice must have at least one item",
-        });
+      return res.status(400).json({
+        success: false,
+        message: "Invoice must have at least one item",
+      });
     }
 
     let totalAmount = 0;
@@ -25,21 +24,17 @@ const CreateInvoice = async (req, res) => {
         owner: userId,
       });
       if (!product) {
-        return res
-          .status(404)
-          .json({
-            success: false,
-            message: `Product not found: ${i.productId}`,
-          });
+        return res.status(404).json({
+          success: false,
+          message: `Product not found: ${i.productId}`,
+        });
       }
 
       if (product.quantity < i.quantity) {
-        return res
-          .status(400)
-          .json({
-            success: false,
-            message: `Insufficient stock for ${product.name}`,
-          });
+        return res.status(400).json({
+          success: false,
+          message: `Insufficient stock for ${product.name}`,
+        });
       }
 
       const total = product.price * i.quantity;
@@ -78,21 +73,24 @@ const CreateInvoice = async (req, res) => {
 const getInvoiceSummary = async (req, res) => {
   try {
     const userId = req.user.userId;
+    const objectIdUser = new mongoose.Types.ObjectId(userId); // ✅ cast once
 
     // Last 7 days filter
     const last7Days = new Date();
     last7Days.setDate(last7Days.getDate() - 7);
 
     const recentTransactions = await InvoiceModel.countDocuments({
-      owner: userId,
+      owner: objectIdUser,
       createdAt: { $gte: last7Days },
     });
 
-    const totalInvoices = await InvoiceModel.countDocuments({ owner: userId });
+    const totalInvoices = await InvoiceModel.countDocuments({
+      owner: objectIdUser,
+    });
 
-    // Aggregate Paid & Unpaid for efficiency
+    // Aggregate Paid & Unpaid
     const summary = await InvoiceModel.aggregate([
-      { $match: { owner: userId } },
+      { $match: { owner: objectIdUser } },
       {
         $group: {
           _id: "$status",
@@ -106,6 +104,7 @@ const getInvoiceSummary = async (req, res) => {
       unpaidAmount = 0,
       paidCount = 0,
       unpaidCount = 0;
+
     summary.forEach((s) => {
       if (s._id === "Paid") {
         paidAmount = s.totalAmount;
@@ -122,8 +121,8 @@ const getInvoiceSummary = async (req, res) => {
       processedInvoices: paidCount + unpaidCount,
       paidAmount,
       unpaidAmount,
-      customers: paidCount, // SRD: #customers ~ #paid invoices
-      pendingInvoices: unpaidCount, // SRD: pending count
+      customers: paidCount, // #customers ~ #paid invoices
+      pendingInvoices: unpaidCount, // pending count
     });
   } catch (err) {
     console.error("getInvoiceSummary:", err);
@@ -230,9 +229,15 @@ const DeleteInvoice = async (req, res) => {
         .status(404)
         .json({ success: false, message: "Invoice not found" });
     }
+    // Increase back stock for each item
+    for (let item of invoice.items) {
+      await ProductModel.findByIdAndUpdate(item.product, {
+        $inc: { quantity: item.quantity },
+      });
+    }
 
-    const deleteInvoice=await InvoiceModel.deleteOne({_id:id})
-    res.status(200).json({success:true,data:deleteInvoice})
+    const deleteInvoice = await InvoiceModel.deleteOne({ _id: id });
+    res.status(200).json({ success: true, data: deleteInvoice });
   } catch (error) {
     console.error("getInvoiceById:", error);
     res.status(500).json({ success: false, message: "Internal Server Error" });
@@ -245,5 +250,5 @@ module.exports = {
   getInvoices,
   markInvoicePaid,
   getInvoiceById,
-  DeleteInvoice
+  DeleteInvoice,
 };

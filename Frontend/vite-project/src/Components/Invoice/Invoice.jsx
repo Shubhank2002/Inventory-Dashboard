@@ -18,8 +18,8 @@ const Invoice = () => {
   const [loading, setLoading] = useState(false);
 
   // NEW STATES
-  const [menuOpenId, setMenuOpenId] = useState(null); 
-  const [deleteInvoiceId, setDeleteInvoiceId] = useState(null); 
+  const [menuOpenId, setMenuOpenId] = useState(null);
+  const [deleteInvoiceId, setDeleteInvoiceId] = useState(null);
 
   // 🔹 Fetch invoices & summary
   const fetchData = async () => {
@@ -45,7 +45,7 @@ const Invoice = () => {
 
   useEffect(() => {
     fetchData();
-  }, [page]);
+  }, [page, invoices]);
 
   // 🔹 Close modal
   const onClose = () => {
@@ -98,7 +98,10 @@ const Invoice = () => {
       onClose();
       fetchData(); // refresh after create
     } catch (err) {
-      console.error("Error creating invoice:", err.response?.data || err.message);
+      console.error(
+        "Error creating invoice:",
+        err.response?.data || err.message
+      );
     } finally {
       setLoading(false);
     }
@@ -178,7 +181,9 @@ const Invoice = () => {
       <div id="invoicerightpart">
         {/* Header */}
         <div id="invoicetopdiv">
-          <h1 style={{ color: "white", fontSize: "18px", fontWeight: "normal" }}>
+          <h1
+            style={{ color: "white", fontSize: "18px", fontWeight: "normal" }}
+          >
             Invoice
           </h1>
           <Searchere />
@@ -190,19 +195,51 @@ const Invoice = () => {
           <div id="invoice_details">
             <div className="invoice_details_div">
               <h3>Recent Transactions</h3>
-              <p>{summary?.recentTransactions || 0}</p>
+              <div className="invoice_details_numbers">
+                <div>
+                  <p>{summary?.recentTransactions || 0}</p>
+                  <p>Last 7 days</p>
+                </div>
+              </div>
             </div>
             <div className="invoice_details_div">
               <h3>Total Invoices</h3>
-              <p>{summary?.totalInvoices || 0}</p>
+              <div className="invoice_details_numbers">
+                <div>
+                  <p>{summary?.totalInvoices || 0}</p>
+                  <p>Last 7 days</p>
+                </div>
+                <div>
+                  <p>{summary?.totalInvoices || 0}</p>
+                  <p>Processed</p>
+                </div>
+              </div>
             </div>
             <div className="invoice_details_div">
               <h3>Paid Amount</h3>
-              <p>₹{summary?.paidAmount || 0}</p>
+              <div className="invoice_details_numbers">
+                <div>
+                  <p>₹{summary?.paidAmount || 0}</p>
+                  <p>Last 7 days</p>
+                </div>
+                <div>
+                  <p>{summary?.customers}</p>
+                  <p>customers</p>
+                </div>
+              </div>
             </div>
             <div className="invoice_details_div">
               <h3>Unpaid Amount</h3>
-              <p>₹{summary?.unpaidAmount || 0}</p>
+              <div className="invoice_details_numbers">
+                <div>
+                  <p>₹{summary?.unpaidAmount || 0}</p>
+                  <p>ordered</p>
+                </div>
+                <div>
+                  <p>{summary?.pendingInvoices}</p>
+                  <p>pending payment</p>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -259,14 +296,22 @@ const Invoice = () => {
                     }}
                   >
                     <button
-                      style={{ cursor: "pointer", display: "block", width: "100%" }}
+                      style={{
+                        cursor: "pointer",
+                        display: "block",
+                        width: "100%",
+                      }}
                       onClick={() => handleView(inv._id)}
                     >
                       View Invoice
                     </button>
                     {inv.status !== "Paid" && (
                       <button
-                        style={{ cursor: "pointer", display: "block", width: "100%" }}
+                        style={{
+                          cursor: "pointer",
+                          display: "block",
+                          width: "100%",
+                        }}
                         onClick={() => handleMarkPaid(inv._id)}
                       >
                         Mark as Paid
@@ -288,29 +333,32 @@ const Invoice = () => {
               </div>
             </div>
           ))}
+          <div style={{marginTop:'20px'}}>
+            <div style={{ display: "flex", justifyContent: "space-between" }}>
+              <button disabled={page === 1} onClick={() => setPage(page - 1)}>
+                Previous
+              </button>
+              <span>Page {page}</span>
+              <button onClick={() => setPage(page + 1)}>Next</button>
+            </div>
+
+            <button
+              onClick={() => setopenInvoice(true)}
+              style={{
+                width: "80px",
+                padding: "3px",
+                borderRadius: "8px",
+                margin: "auto",
+                cursor: "pointer",
+                marginTop: "10px",
+              }}
+            >
+              Add Invoice
+            </button>
+          </div>
         </div>
 
         {/* PAGINATION */}
-        <div style={{ display: "flex", justifyContent: "space-between" }}>
-          <button disabled={page === 1} onClick={() => setPage(page - 1)}>
-            Previous
-          </button>
-          <span>Page {page}</span>
-          <button onClick={() => setPage(page + 1)}>Next</button>
-        </div>
-
-        <button
-          onClick={() => setopenInvoice(true)}
-          style={{
-            width: "80px",
-            padding: "3px",
-            borderRadius: "8px",
-            margin: "auto",
-            cursor: "pointer",
-          }}
-        >
-          Add Invoice
-        </button>
       </div>
 
       {/* DELETE CONFIRMATION */}
@@ -319,7 +367,9 @@ const Invoice = () => {
           <div className="dialog" onClick={(e) => e.stopPropagation()}>
             <h2>This Invoice will be deleted.</h2>
             <button onClick={() => setDeleteInvoiceId(null)}>Cancel</button>
-            <button onClick={() => handleDelete(deleteInvoiceId)}>Confirm</button>
+            <button onClick={() => handleDelete(deleteInvoiceId)}>
+              Confirm
+            </button>
           </div>
         </div>
       )}

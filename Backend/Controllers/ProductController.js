@@ -1,6 +1,6 @@
 const ProductModel = require("../Models/ProductModel");
 const fs = require("fs");
-const mongoose=require('mongoose')
+const mongoose = require("mongoose");
 const csv = require("csv-parser");
 const InvoiceModel = require("../Models/InvoiceModel");
 const CreateSingleProduct = async (req, res) => {
@@ -8,18 +8,22 @@ const CreateSingleProduct = async (req, res) => {
     name,
     quantity,
     price,
+    costPrice,
     threshold,
     category,
     expiryDate,
     unit,
     productId,
   } = req.body;
-   const userId = req.user.userId; 
-  if (!name || price == null) {
+  const userId = req.user.userId;
+  if (!name || price == null || costPrice == null) {
     if (req.file) fs.unlinkSync(req.file.path);
     return res
       .status(400)
-      .json({ success: false, message: "Name and price are required" });
+      .json({
+        success: false,
+        message: "Name and price are cost price are  required ",
+      });
   }
 
   if (expiryDate && new Date(expiryDate) < new Date()) {
@@ -49,11 +53,12 @@ const CreateSingleProduct = async (req, res) => {
     const newDoc = await ProductModel.create({
       name: name.trim().toLowerCase(),
       price: Number(price),
-      category:category.trim().toLowerCase(),
+      costPrice: Number(costPrice),
+      category: category.trim().toLowerCase(),
       quantity: Number(quantity) || 0,
       expiryDate: expiryDate ? new Date(expiryDate) : undefined,
       threshold: Number(threshold) || 0,
-      unit:unit.trim().toLowerCase(),
+      unit: unit.trim().toLowerCase(),
       productId,
       imageName,
       imageUrl,
@@ -89,6 +94,10 @@ const CreateMultipleProducts = async (req, res) => {
             productId: r.productId?.trim(),
             category: r.category?.trim().toLowerCase(),
             price: r.price != null && r.price !== "" ? Number(r.price) : 0,
+            costPrice:
+              r.costPrice != null && r.costPrice !== ""
+                ? Number(r.costPrice)
+                : null,
             quantity:
               r.quantity != null && r.quantity !== "" ? Number(r.quantity) : 0,
             unit: r.unit?.trim().toLowerCase(),
@@ -104,7 +113,14 @@ const CreateMultipleProducts = async (req, res) => {
 
         const isValid = (o) => {
           if (!o.name || !o.productId) return false;
-          if (Number.isNaN(o.price) || o.price < 0) return false;
+          if (o.price == null || Number.isNaN(o.price) || o.price <= 0)
+            return false;
+          if (
+            o.costPrice == null ||
+            Number.isNaN(o.costPrice) ||
+            o.costPrice <= 0
+          )
+            return false; // ✅ mandatory
           if (Number.isNaN(o.quantity) || o.quantity < 0) return false;
           if (Number.isNaN(o.threshold) || o.threshold < 0) return false;
           if (o.expiryDate && isNaN(o.expiryDate.getTime())) return false;
@@ -140,7 +156,7 @@ const CreateMultipleProducts = async (req, res) => {
         // 4) Filter out productIds that already exist in DB
         const ids = normalized.map((x) => x.productId);
         const existingDocs = await ProductModel.find(
-          { productId: { $in: ids },owner: userId },
+          { productId: { $in: ids }, owner: userId },
           { productId: 1, _id: 0 }
         ).lean();
 
@@ -176,13 +192,11 @@ const CreateMultipleProducts = async (req, res) => {
               }
             } else {
               console.error("insertMany error:", err);
-              return res
-                .status(500)
-                .json({
-                  success: false,
-                  message: "Insert error",
-                  error: err.message,
-                });
+              return res.status(500).json({
+                success: false,
+                message: "Insert error",
+                error: err.message,
+              });
             }
           }
         }
@@ -204,13 +218,11 @@ const CreateMultipleProducts = async (req, res) => {
         });
       } catch (err) {
         console.error("CSV upload error:", err);
-        return res
-          .status(500)
-          .json({
-            success: false,
-            message: "CSV processing failed",
-            error: err.message,
-          });
+        return res.status(500).json({
+          success: false,
+          message: "CSV processing failed",
+          error: err.message,
+        });
       } finally {
         // optional: delete uploaded CSV after processing
         try {
@@ -220,13 +232,11 @@ const CreateMultipleProducts = async (req, res) => {
     })
     .on("error", (err) => {
       console.error("CSV stream error:", err);
-      return res
-        .status(500)
-        .json({
-          success: false,
-          message: "CSV read failed",
-          error: err.message,
-        });
+      return res.status(500).json({
+        success: false,
+        message: "CSV read failed",
+        error: err.message,
+      });
     });
 };
 const getProducts = async (req, res) => {
@@ -264,24 +274,28 @@ const getProductSummary = async (req, res) => {
     const userId = req.user.userId;
 
     // 1) Total categories
-    const categories = await ProductModel.distinct("category", { owner: new mongoose.Types.ObjectId(userId) });
+    const categories = await ProductModel.distinct("category", {
+      owner: new mongoose.Types.ObjectId(userId),
+    });
     const categoryCount = categories.length;
 
     // 2) Total products
-    const totalProducts = await ProductModel.countDocuments({ owner: new mongoose.Types.ObjectId(userId) });
+    const totalProducts = await ProductModel.countDocuments({
+      owner: new mongoose.Types.ObjectId(userId),
+    });
 
     // 3) How many ordered (from invoices)
     const orderedAgg = await InvoiceModel.aggregate([
       { $match: { owner: new mongoose.Types.ObjectId(userId) } },
       { $unwind: "$items" },
-      { $group: { _id: null, totalOrdered: { $sum: "$items.quantity" } } }
+      { $group: { _id: null, totalOrdered: { $sum: "$items.quantity" } } },
     ]);
     const totalOrdered = orderedAgg.length > 0 ? orderedAgg[0].totalOrdered : 0;
 
     // 4) Out of stock products
     const outOfStock = await ProductModel.countDocuments({
       owner: new mongoose.Types.ObjectId(userId),
-      quantity: 0
+      quantity: 0,
     });
 
     // 5) Top selling products
@@ -293,17 +307,19 @@ const getProductSummary = async (req, res) => {
           _id: "$items.product",
           name: { $first: "$items.name" },
           totalQty: { $sum: "$items.quantity" },
-          totalSales: { $sum: "$items.total" }
-        }
+          totalSales: { $sum: "$items.total" },
+        },
       },
       { $sort: { totalQty: -1 } },
-      { $limit: 5 }
+      { $limit: 5 },
     ]);
 
     // 6) Revenue (from paid invoices)
     const revenueAgg = await InvoiceModel.aggregate([
-      { $match: { owner: new mongoose.Types.ObjectId(userId), status: "Paid" } },
-      { $group: { _id: null, revenue: { $sum: "$totalAmount" } } }
+      {
+        $match: { owner: new mongoose.Types.ObjectId(userId), status: "Paid" },
+      },
+      { $group: { _id: null, revenue: { $sum: "$totalAmount" } } },
     ]);
     const revenue = revenueAgg[0]?.revenue || 0;
 
@@ -314,7 +330,7 @@ const getProductSummary = async (req, res) => {
       totalOrdered,
       outOfStock,
       revenue,
-      topSelling: topSellingAgg
+      topSelling: topSellingAgg,
     });
   } catch (err) {
     console.error("getProductSummary:", err);
@@ -322,4 +338,9 @@ const getProductSummary = async (req, res) => {
   }
 };
 
-module.exports = { CreateSingleProduct, CreateMultipleProducts,getProducts,getProductSummary };
+module.exports = {
+  CreateSingleProduct,
+  CreateMultipleProducts,
+  getProducts,
+  getProductSummary,
+};

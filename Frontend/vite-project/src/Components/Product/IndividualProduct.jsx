@@ -17,6 +17,7 @@ const IndividualProduct = () => {
     unit: "",
     expiry: "",
     threshold: "",
+    costPrice:''
   });
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState("");
@@ -45,6 +46,7 @@ const IndividualProduct = () => {
       unit: "",
       expiry: "",
       threshold: "",
+      costPrice:''
     });
     setImageFile(null);
     setImagePreview("");
@@ -61,6 +63,7 @@ const IndividualProduct = () => {
     newForm.append('threshold',Number(form.threshold))
     newForm.append('unit',form.unit.trim().toLowerCase())
     newForm.append('productId',form.productId)
+    newForm.append('costPrice',form.costPrice)
 
     if(imageFile){
         newForm.append('image',imageFile)
@@ -183,7 +186,19 @@ const IndividualProduct = () => {
                 </label>
 
                 <label className="ifield">
-                  <span className="ifield-label">Price</span>
+                  <span className="ifield-label">Cost Price</span>
+                  <input
+                    type="number"
+                    name="costPrice"
+                    className="ifield-input"
+                    value={form.costPrice}
+                    onChange={onInputChange}
+                    placeholder="Enter price"
+                    required
+                  />
+                </label>
+                <label className="ifield">
+                  <span className="ifield-label">Selling Price</span>
                   <input
                     type="number"
                     name="price"

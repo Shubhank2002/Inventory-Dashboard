@@ -1,7 +1,7 @@
 import React from 'react'
 import './SalesOverviewStyles.css'
 
-const SalesOverview = () => {
+const SalesOverview = ({salesOverview}) => {
   return (
     <div id='salesoverviewcontainer'>
       <h1 style={{textAlign:'left',marginLeft:'25px',fontWeight:'normal',fontSize:'24px',marginBottom:'9px'}}>Sales Overview</h1>
@@ -11,7 +11,7 @@ const SalesOverview = () => {
                 <img src='/Home_assets/sales.png' alt="" />
             </div>
             <div className='para_container'>
-                <p className='para1'>832</p>
+                <p className='para1'>{salesOverview.sales}</p>
                 <p>Sales</p>
             </div>
         </div>
@@ -20,7 +20,7 @@ const SalesOverview = () => {
                 <img src='/Home_assets/revenue.png' alt="" />
             </div>
             <div className='para_container'>
-                <p className='para1'>18300</p>
+                <p className='para1'>{salesOverview.revenue}</p>
                 <p>revenue</p>
             </div>
         </div>
@@ -29,7 +29,7 @@ const SalesOverview = () => {
                 <img src='/Home_assets/profit.png' alt="" />
             </div>
             <div className='para_container'>
-                <p className='para1'>868</p>
+                <p className='para1'>{salesOverview.profit}</p>
                 <p>Profit</p>
             </div>
         </div>
@@ -38,7 +38,7 @@ const SalesOverview = () => {
                 <img src='/Home_assets/cost.png' alt="" />
             </div>
             <div className='para_container'>
-                <p className='para1'>17432</p>
+                <p className='para1'>{salesOverview.cost}</p>
                 <p>cost</p>
             </div>
         </div>
