@@ -1,6 +1,8 @@
 const ProductModel = require("../Models/ProductModel");
 const fs = require("fs");
+const mongoose=require('mongoose')
 const csv = require("csv-parser");
+const InvoiceModel = require("../Models/InvoiceModel");
 const CreateSingleProduct = async (req, res) => {
   const {
     name,
@@ -257,5 +259,67 @@ const getProducts = async (req, res) => {
     res.status(500).json({ success: false, message: "Internal Server Error" });
   }
 };
+const getProductSummary = async (req, res) => {
+  try {
+    const userId = req.user.userId;
 
-module.exports = { CreateSingleProduct, CreateMultipleProducts,getProducts };
+    // 1) Total categories
+    const categories = await ProductModel.distinct("category", { owner: new mongoose.Types.ObjectId(userId) });
+    const categoryCount = categories.length;
+
+    // 2) Total products
+    const totalProducts = await ProductModel.countDocuments({ owner: new mongoose.Types.ObjectId(userId) });
+
+    // 3) How many ordered (from invoices)
+    const orderedAgg = await InvoiceModel.aggregate([
+      { $match: { owner: new mongoose.Types.ObjectId(userId) } },
+      { $unwind: "$items" },
+      { $group: { _id: null, totalOrdered: { $sum: "$items.quantity" } } }
+    ]);
+    const totalOrdered = orderedAgg.length > 0 ? orderedAgg[0].totalOrdered : 0;
+
+    // 4) Out of stock products
+    const outOfStock = await ProductModel.countDocuments({
+      owner: new mongoose.Types.ObjectId(userId),
+      quantity: 0
+    });
+
+    // 5) Top selling products
+    const topSellingAgg = await InvoiceModel.aggregate([
+      { $match: { owner: new mongoose.Types.ObjectId(userId) } },
+      { $unwind: "$items" },
+      {
+        $group: {
+          _id: "$items.product",
+          name: { $first: "$items.name" },
+          totalQty: { $sum: "$items.quantity" },
+          totalSales: { $sum: "$items.total" }
+        }
+      },
+      { $sort: { totalQty: -1 } },
+      { $limit: 5 }
+    ]);
+
+    // 6) Revenue (from paid invoices)
+    const revenueAgg = await InvoiceModel.aggregate([
+      { $match: { owner: new mongoose.Types.ObjectId(userId), status: "Paid" } },
+      { $group: { _id: null, revenue: { $sum: "$totalAmount" } } }
+    ]);
+    const revenue = revenueAgg[0]?.revenue || 0;
+
+    res.json({
+      success: true,
+      categories: categoryCount,
+      totalProducts,
+      totalOrdered,
+      outOfStock,
+      revenue,
+      topSelling: topSellingAgg
+    });
+  } catch (err) {
+    console.error("getProductSummary:", err);
+    res.status(500).json({ success: false, message: "Internal Server Error" });
+  }
+};
+
+module.exports = { CreateSingleProduct, CreateMultipleProducts,getProducts,getProductSummary };

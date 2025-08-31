@@ -20,25 +20,31 @@
 #productseconddiv{
     display: flex;
     flex-direction: column;
-    gap: 15px;
+    gap: 8px;
     background-color: white;
-    padding: 5px;
+    padding: 5px 10px;
     border-radius: 10px;
     margin: 0px 10px;
 }
 #product_details{
     display: flex;
     gap: 20px;
+    justify-content: space-evenly;
 }
 .product_details_div{
      display: flex;
     flex-direction: column;
-    border-right: 1px solid #9F9F9F;
-    padding: 5px;
+    
+     border-right: 1px solid #e0e0e0;
+    padding-right: 80px;
+
+}
+.product_details_div:last-child{
+    border-right: none;
 }
 .product_details_numbers{
     display: flex;
-    gap: 10px;
+    gap: 40px;
 }
 
 /* Overlay */
@@ -164,3 +170,60 @@
 .btn.primary{ background:#0b3b3b; color:#fff; }
 .btn.primary:hover{ background:#082f2f; }
 .btn.primary:disabled{ opacity:.6; cursor:not-allowed; }
+
+#productlistdiv{
+    background-color: white;
+    border-radius: 12px;
+  margin: 0px 10px;
+  padding: 20px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  
+}
+/* Table Headers */
+.grid_div_product_headers {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  font-weight: 600;
+  padding: 12px 8px;
+  border-bottom: 2px solid #ddd;
+  background-color: #B6B9CF;
+  color: #333;
+  
+}
+
+/* Table Rows */
+.grid_div_product_content {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  padding: 10px 8px;
+  border-bottom: 1px solid #eee;
+  align-items: center;
+  font-size: 14px;
+  color: #444;
+}
+
+/* Hover effect for rows */
+.grid_div_product_content:hover {
+  background-color: #f9f9f9;
+}
+
+/* Product name bold */
+.grid_div_product_content div:first-child {
+  font-weight: 500;
+  color: #222;
+}
+
+/* Availability text colors */
+.availability-instock {
+  color: green;
+  font-weight: 600;
+}
+.availability-lowstock {
+  color: orange;
+  font-weight: 600;
+}
+.availability-outstock,
+.availability-expired {
+  color: red;
+  font-weight: 600;
+}

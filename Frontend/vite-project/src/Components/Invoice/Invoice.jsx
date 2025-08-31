@@ -1,9 +1,7 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import "./InvoiceStyles.css";
 import Sidebar from "../Sidebar";
 import Searchere from "../Searchere";
-import { useEffect } from "react";
-import { useState } from "react";
 import axios from "axios";
 
 const Invoice = () => {
@@ -18,29 +16,52 @@ const Invoice = () => {
   const [selectedInvoice, setSelectedInvoice] = useState(null);
   const [openInvoiceView, setOpenInvoiceView] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  // NEW STATES
+  const [menuOpenId, setMenuOpenId] = useState(null); 
+  const [deleteInvoiceId, setDeleteInvoiceId] = useState(null); 
+
+  // 🔹 Fetch invoices & summary
+  const fetchData = async () => {
+    try {
+      const jsontoken = localStorage.getItem("token");
+      const token = JSON.parse(jsontoken);
+      const headers = { Authorization: `Bearer ${token}` };
+
+      const [summaryRes, invoicesRes] = await Promise.all([
+        axios.get("http://localhost:8000/invoices/summary", { headers }),
+        axios.get(
+          `http://localhost:8000/invoices?page=${page}&limit=${limit}`,
+          { headers }
+        ),
+      ]);
+
+      setSummary(summaryRes.data);
+      setInvoices(invoicesRes.data.data);
+    } catch (err) {
+      console.error("Error fetching invoices:", err);
+    }
+  };
+
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const jsontoken = localStorage.getItem("token"); // assuming JWT stored here
-        const token = JSON.parse(jsontoken);
-        const headers = { Authorization: `Bearer ${token}` };
-
-        const [summaryRes, invoicesRes] = await Promise.all([
-          axios.get("http://localhost:8000/invoices/summary", { headers }),
-          axios.get(
-            `http://localhost:8000/invoices?page=${page}&limit=${limit}`,
-            { headers }
-          ),
-        ]);
-
-        setSummary(summaryRes.data);
-        setInvoices(invoicesRes.data.data);
-      } catch (err) {
-        console.error("Error fetching invoices:", err);
-      }
-    };
     fetchData();
-  }, [page, invoices]);
+  }, [page]);
+
+  // 🔹 Close modal
+  const onClose = () => {
+    setopenInvoice(false);
+    setProductId("");
+    setQuantity(1);
+  };
+
+  // 🔹 Close 3-dot menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = () => setMenuOpenId(null);
+    document.addEventListener("click", handleClickOutside);
+    return () => document.removeEventListener("click", handleClickOutside);
+  }, []);
+
+  // 🔹 View invoice
   const handleView = async (id) => {
     try {
       const token = JSON.parse(localStorage.getItem("token"));
@@ -50,31 +71,13 @@ const Invoice = () => {
       });
       setSelectedInvoice(data.data);
       setOpenInvoiceView(true);
+      setMenuOpenId(null);
     } catch (err) {
       console.error("Error fetching invoice:", err);
     }
   };
-  useEffect(() => {
-    if (openInvoice) {
-      const fetchProducts = async () => {
-        try {
-          const jsontoken = localStorage.getItem("token");
-          const token = JSON.parse(jsontoken);
-          const headers = { Authorization: `Bearer ${token}` };
-          const res = await axios.get(
-            "http://localhost:8000/product/getproducts",
-            {
-              headers,
-            }
-          );
-          setProducts(res.data.data || []);
-        } catch (err) {
-          console.error("Error fetching products:", err);
-        }
-      };
-      fetchProducts();
-    }
-  }, [openInvoice]);
+
+  // 🔹 Create invoice
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!productId || quantity <= 0) {
@@ -92,201 +95,247 @@ const Invoice = () => {
         { headers }
       );
 
-      setopenInvoice(false); // close modal
-      setProductId("");
-      setQuantity(1);
-      fetchData(); // refresh invoice list
+      onClose();
+      fetchData(); // refresh after create
     } catch (err) {
-      console.error(
-        "Error creating invoice:",
-        err.response?.data || err.message
-      );
+      console.error("Error creating invoice:", err.response?.data || err.message);
     } finally {
       setLoading(false);
     }
   };
 
-  const AddInvoice = async () => {
-    setopenInvoice(true);
+  // 🔹 Mark as paid
+  const handleMarkPaid = async (id) => {
+    try {
+      const jsontoken = localStorage.getItem("token");
+      const token = JSON.parse(jsontoken);
+      const headers = { Authorization: `Bearer ${token}` };
+
+      const res = await axios.patch(
+        `http://localhost:8000/invoices/${id}/pay`,
+        {},
+        { headers }
+      );
+
+      setInvoices((prev) =>
+        prev.map((inv) =>
+          inv._id === id
+            ? {
+                ...inv,
+                status: "Paid",
+                referenceNumber: res.data.data.referenceNumber,
+              }
+            : inv
+        )
+      );
+      fetchData(); // refresh
+      setMenuOpenId(null);
+    } catch (err) {
+      console.error("Error marking as paid:", err);
+    }
   };
-  const onClose = () => {
-    setopenInvoice(false);
+
+  // 🔹 Fetch products when adding invoice
+  useEffect(() => {
+    if (openInvoice && products.length === 0) {
+      const fetchProducts = async () => {
+        try {
+          const token = JSON.parse(localStorage.getItem("token"));
+          const headers = { Authorization: `Bearer ${token}` };
+          const res = await axios.get(
+            "http://localhost:8000/product/getproducts",
+            { headers }
+          );
+          setProducts(res.data.data || []);
+        } catch (err) {
+          console.error("Error fetching products:", err);
+        }
+      };
+      fetchProducts();
+    }
+  }, [openInvoice]);
+
+  // 🔹 Delete invoice
+  const handleDelete = async (id) => {
+    try {
+      const jsontoken = localStorage.getItem("token");
+      const token = JSON.parse(jsontoken);
+      const headers = { Authorization: `Bearer ${token}` };
+      await axios.delete(`http://localhost:8000/invoices/${id}/delete`, {
+        headers,
+      });
+      setInvoices((prev) => prev.filter((inv) => inv._id !== id));
+      setDeleteInvoiceId(null);
+      fetchData(); // refresh
+    } catch (error) {
+      console.error("Error deleting invoice:", error);
+    }
   };
+
   return (
     <div id="invoicecontainer">
       <Sidebar />
       <div id="invoicerightpart">
+        {/* Header */}
         <div id="invoicetopdiv">
-          <h1
-            style={{
-              color: "white",
-              fontSize: "18px",
-              fontWeight: "normal",
-              margin: "5px 0px",
-            }}
-          >
+          <h1 style={{ color: "white", fontSize: "18px", fontWeight: "normal" }}>
             Invoice
           </h1>
           <Searchere />
         </div>
+
+        {/* SUMMARY */}
         <div id="invoiceseconddiv">
           <h1>Overall Invoice</h1>
           <div id="invoice_details">
             <div className="invoice_details_div">
               <h3>Recent Transactions</h3>
-              <div className="invoice_details_numbers">
-                <div>
-                  <p>{summary?.recentTransactions || 0}</p>
-                  <p>Last 7 days</p>
-                </div>
-              </div>
+              <p>{summary?.recentTransactions || 0}</p>
             </div>
             <div className="invoice_details_div">
               <h3>Total Invoices</h3>
-              <div className="invoice_details_numbers">
-                <div>
-                  <p>{summary?.totalInvoices || 0}</p>
-                  <p>Last 7 days</p>
-                </div>
-                <div>
-                  <p>{summary?.processedInvoices || 0}</p>
-                  <p>processed</p>
-                </div>
-              </div>
+              <p>{summary?.totalInvoices || 0}</p>
             </div>
             <div className="invoice_details_div">
               <h3>Paid Amount</h3>
-              <div className="invoice_details_numbers">
-                <div>
-                  <p>{summary?.paidAmount || 0}</p>
-                  <p>Last 7 days</p>
-                </div>
-                <div>
-                  <p>{summary?.customers || 0}</p>
-                  <p>customers</p>
-                </div>
-              </div>
+              <p>₹{summary?.paidAmount || 0}</p>
             </div>
             <div className="invoice_details_div">
               <h3>Unpaid Amount</h3>
-              <div className="invoice_details_numbers">
-                <div>
-                  <p>{summary?.unpaidAmount || 0}</p>
-                  <p>Last 7 days</p>
-                </div>
-                <div>
-                  <p>{summary?.pendingInvoices || 0}</p>
-                  <p>processed</p>
-                </div>
-              </div>
+              <p>₹{summary?.unpaidAmount || 0}</p>
             </div>
           </div>
         </div>
+
+        {/* LIST */}
         <div id="invoicelistdiv">
           <h1>Invoice List</h1>
-          <div>
-            <div className="grid_div_invoice_headers">
-              <div>Invoice List</div>
-              <div>Reference Number</div>
-              <div>Amount</div>
-              <div>Status</div>
-              <div>Due Date</div>
-              <div>Actions</div>
-            </div>
+          <div className="grid_div_invoice_headers">
+            <div>Invoice ID</div>
+            <div>Reference Number</div>
+            <div>Amount</div>
+            <div>Status</div>
+            <div>Due Date</div>
           </div>
-          {invoices &&
-            invoices.map((inv) => (
-              <div className="grid_div_invoice_content" key={inv._id}>
-                <div>{inv.invoiceId}</div>
-                <div>{inv.referenceNumber || "-"}</div>
-                <div>₹ {inv.totalAmount}</div>
-                <div>{inv.status}</div>
-                <div>{new Date(inv.dueDate).toLocaleDateString()}</div>
-                <div>
-                  <button onClick={() => handleView(inv._id)}>View</button>
-                  <button onClick={() => console.log("Delete", inv._id)}>
-                    Delete
-                  </button>
-                </div>
+
+          {invoices.map((inv) => (
+            <div className="grid_div_invoice_content" key={inv._id}>
+              <div>{inv.invoiceId}</div>
+              <div>{inv.referenceNumber || "-"}</div>
+              <div>₹ {inv.totalAmount}</div>
+              <div>{inv.status}</div>
+
+              {/* Due Date + Three dots */}
+              <div style={{ position: "relative" }}>
+                {new Date(inv.dueDate).toLocaleDateString()}
+                <button
+                  style={{
+                    marginLeft: "10px",
+                    background: "none",
+                    border: "none",
+                    cursor: "pointer",
+                    fontSize: "18px",
+                    color: "black",
+                  }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setMenuOpenId(menuOpenId === inv._id ? null : inv._id);
+                  }}
+                >
+                  ⋮
+                </button>
+
+                {menuOpenId === inv._id && (
+                  <div
+                    style={{
+                      position: "absolute",
+                      right: 0,
+                      top: "100%",
+                      background: "#fff",
+                      border: "1px solid #ccc",
+                      borderRadius: "6px",
+                      boxShadow: "0 4px 10px rgba(0,0,0,0.1)",
+                      zIndex: 10,
+                    }}
+                  >
+                    <button
+                      style={{ cursor: "pointer", display: "block", width: "100%" }}
+                      onClick={() => handleView(inv._id)}
+                    >
+                      View Invoice
+                    </button>
+                    {inv.status !== "Paid" && (
+                      <button
+                        style={{ cursor: "pointer", display: "block", width: "100%" }}
+                        onClick={() => handleMarkPaid(inv._id)}
+                      >
+                        Mark as Paid
+                      </button>
+                    )}
+                    <button
+                      style={{
+                        color: "red",
+                        cursor: "pointer",
+                        display: "block",
+                        width: "100%",
+                      }}
+                      onClick={() => setDeleteInvoiceId(inv._id)}
+                    >
+                      Delete
+                    </button>
+                  </div>
+                )}
               </div>
-            ))}
+            </div>
+          ))}
         </div>
-        {/* Pagination */}
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            marginTop: "10px",
-          }}
-        >
-          <button
-            disabled={page === 1}
-            onClick={() => setPage(page - 1)}
-            style={{ cursor: "pointer" }}
-          >
+
+        {/* PAGINATION */}
+        <div style={{ display: "flex", justifyContent: "space-between" }}>
+          <button disabled={page === 1} onClick={() => setPage(page - 1)}>
             Previous
           </button>
           <span>Page {page}</span>
-          <button
-            onClick={() => setPage(page + 1)}
-            style={{ cursor: "pointer" }}
-          >
-            Next
-          </button>
+          <button onClick={() => setPage(page + 1)}>Next</button>
         </div>
+
         <button
+          onClick={() => setopenInvoice(true)}
           style={{
-            width: "100px",
-            margin: "auto",
-            padding: "5px",
+            width: "80px",
+            padding: "3px",
             borderRadius: "8px",
+            margin: "auto",
             cursor: "pointer",
           }}
-          onClick={AddInvoice}
         >
           Add Invoice
         </button>
       </div>
-      {openInvoice && (
-        <div
-          style={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            width: "100vw",
-            height: "100vh",
-            background: "rgba(0,0,0,0.5)",
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            zIndex: 999,
-          }}
-        >
-          <div
-            style={{
-              background: "#fff",
-              padding: "30px",
-              borderRadius: "12px",
-              width: "400px",
-              boxShadow: "0 8px 20px rgba(0,0,0,0.2)",
-              textAlign: "center",
-            }}
-          >
-            <h2 style={{ marginBottom: "20px" }}>Create Invoice</h2>
 
+      {/* DELETE CONFIRMATION */}
+      {deleteInvoiceId && (
+        <div className="overlay" onClick={() => setDeleteInvoiceId(null)}>
+          <div className="dialog" onClick={(e) => e.stopPropagation()}>
+            <h2>This Invoice will be deleted.</h2>
+            <button onClick={() => setDeleteInvoiceId(null)}>Cancel</button>
+            <button onClick={() => handleDelete(deleteInvoiceId)}>Confirm</button>
+          </div>
+        </div>
+      )}
+
+      {/* CREATE INVOICE POPUP */}
+      {openInvoice && (
+        <div className="overlay" onClick={onClose}>
+          <div className="dialog" onClick={(e) => e.stopPropagation()}>
+            <h2>Create Invoice</h2>
             <form
               onSubmit={handleSubmit}
               style={{ display: "flex", flexDirection: "column", gap: "15px" }}
             >
-              {/* Product Dropdown */}
               <select
                 value={productId}
                 onChange={(e) => setProductId(e.target.value)}
-                style={{
-                  padding: "10px",
-                  borderRadius: "8px",
-                  border: "1px solid #ccc",
-                }}
               >
                 <option value="">Select Product</option>
                 {products.map((p) => (
@@ -296,56 +345,19 @@ const Invoice = () => {
                 ))}
               </select>
 
-              {/* Quantity Input */}
               <input
                 type="number"
                 min="1"
                 value={quantity}
                 onChange={(e) => setQuantity(e.target.value)}
                 placeholder="Enter Quantity"
-                style={{
-                  padding: "10px",
-                  borderRadius: "8px",
-                  border: "1px solid #ccc",
-                }}
               />
 
-              {/* Buttons */}
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  marginTop: "10px",
-                }}
-              >
-                <button
-                  type="button"
-                  onClick={onClose}
-                  style={{
-                    flex: 1,
-                    marginRight: "10px",
-                    padding: "10px",
-                    borderRadius: "8px",
-                    border: "none",
-                    background: "#ccc",
-                    cursor: "pointer",
-                  }}
-                >
+              <div style={{ display: "flex", justifyContent: "space-between" }}>
+                <button type="button" onClick={onClose}>
                   Cancel
                 </button>
-                <button
-                  type="submit"
-                  disabled={loading}
-                  style={{
-                    flex: 1,
-                    padding: "10px",
-                    borderRadius: "8px",
-                    border: "none",
-                    background: "#242531",
-                    color: "#fff",
-                    cursor: "pointer",
-                  }}
-                >
+                <button type="submit" disabled={loading}>
                   {loading ? "Creating..." : "Create"}
                 </button>
               </div>
@@ -353,34 +365,17 @@ const Invoice = () => {
           </div>
         </div>
       )}
+
+      {/* VIEW INVOICE POPUP */}
       {openInvoiceView && selectedInvoice && (
-        <div
-          style={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            width: "100vw",
-            height: "100vh",
-            background: "rgba(0,0,0,0.5)",
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            zIndex: 1000,
-          }}
-          onClick={() => setOpenInvoiceView(false)} // ✅ close on backdrop click
-        >
+        <div className="overlay" onClick={() => setOpenInvoiceView(false)}>
           <div
-            style={{
-              background: "#fff",
-              padding: "30px",
-              borderRadius: "12px",
-              width: "700px",
-              boxShadow: "0 8px 20px rgba(0,0,0,0.2)",
-            }}
-            onClick={(e) => e.stopPropagation()} // ✅ prevent closing when clicking inside modal
+            className="dialog"
+            style={{ width: "700px" }}
+            onClick={(e) => e.stopPropagation()}
           >
             <h2 style={{ textAlign: "center" }}>INVOICE</h2>
-            <div style={{ marginBottom: "15px" }}>
+            <div>
               <strong>Invoice #:</strong> {selectedInvoice.invoiceId} <br />
               <strong>Reference:</strong>{" "}
               {selectedInvoice.referenceNumber || "-"} <br />
@@ -390,68 +385,42 @@ const Invoice = () => {
               {new Date(selectedInvoice.dueDate).toLocaleDateString()}
             </div>
 
-            {/* Items Table */}
-            <table
-              style={{
-                width: "100%",
-                borderCollapse: "collapse",
-                marginBottom: "20px",
-              }}
-            >
+            <table>
               <thead>
                 <tr>
-                  <th
-                    style={{
-                      textAlign: "left",
-                      borderBottom: "1px solid #ddd",
-                    }}
-                  >
-                    Products
-                  </th>
-                  <th style={{ borderBottom: "1px solid #ddd" }}>Qty</th>
-                  <th style={{ borderBottom: "1px solid #ddd" }}>Price</th>
-                  <th style={{ borderBottom: "1px solid #ddd" }}>Total</th>
+                  <th>Products</th>
+                  <th>Qty</th>
+                  <th>Price</th>
+                  <th>Total</th>
                 </tr>
               </thead>
               <tbody>
                 {selectedInvoice.items.map((item, idx) => (
                   <tr key={idx}>
                     <td>{item.name}</td>
-                    <td style={{ textAlign: "center" }}>{item.quantity}</td>
-                    <td style={{ textAlign: "right" }}>₹{item.price}</td>
-                    <td style={{ textAlign: "right" }}>₹{item.total}</td>
+                    <td>{item.quantity}</td>
+                    <td>₹{item.price}</td>
+                    <td>₹{item.total}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
 
-            <div
-              style={{
-                textAlign: "right",
-                fontWeight: "bold",
-                fontSize: "18px",
-              }}
-            >
+            <div style={{ textAlign: "right", fontWeight: "bold" }}>
               Total Due: ₹{selectedInvoice.totalAmount}
             </div>
 
-            {/* Actions */}
             <div
               style={{
                 display: "flex",
                 justifyContent: "flex-end",
-                marginTop: "20px",
                 gap: "10px",
+                marginTop: "20px",
               }}
             >
-              <button
-                onClick={() => setOpenInvoiceView(false)}
-                style={{ padding: "8px 12px" }}
-              >
-                Close
-              </button>
-              <button style={{ padding: "8px 12px" }}>Download</button>
-              <button style={{ padding: "8px 12px" }}>Print</button>
+              <button onClick={() => setOpenInvoiceView(false)}>Close</button>
+              <button>Download</button>
+              <button>Print</button>
             </div>
           </div>
         </div>

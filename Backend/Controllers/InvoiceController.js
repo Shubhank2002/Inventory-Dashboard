@@ -5,23 +5,41 @@ const ProductModel = require("../Models/ProductModel");
 const CreateInvoice = async (req, res) => {
   try {
     const userId = req.user.userId; // from JWT middleware
-    const { items } = req.body;     // [{ productId, quantity }, ...]
+    const { items } = req.body; // [{ productId, quantity }, ...]
 
     if (!items || !Array.isArray(items) || items.length === 0) {
-      return res.status(400).json({ success: false, message: "Invoice must have at least one item" });
+      return res
+        .status(400)
+        .json({
+          success: false,
+          message: "Invoice must have at least one item",
+        });
     }
 
     let totalAmount = 0;
     const itemDetails = [];
 
     for (let i of items) {
-      const product = await ProductModel.findOne({ _id: i.productId, owner: userId });
+      const product = await ProductModel.findOne({
+        _id: i.productId,
+        owner: userId,
+      });
       if (!product) {
-        return res.status(404).json({ success: false, message: `Product not found: ${i.productId}` });
+        return res
+          .status(404)
+          .json({
+            success: false,
+            message: `Product not found: ${i.productId}`,
+          });
       }
 
       if (product.quantity < i.quantity) {
-        return res.status(400).json({ success: false, message: `Insufficient stock for ${product.name}` });
+        return res
+          .status(400)
+          .json({
+            success: false,
+            message: `Insufficient stock for ${product.name}`,
+          });
       }
 
       const total = product.price * i.quantity;
@@ -33,7 +51,7 @@ const CreateInvoice = async (req, res) => {
         price: product.price,
         quantity: i.quantity,
         total,
-        availability: product.availability  // ✅ snapshot virtual
+        // ✅ snapshot virtual
       });
 
       // Deduct stock
@@ -46,11 +64,10 @@ const CreateInvoice = async (req, res) => {
       items: itemDetails,
       totalAmount,
       status: "Unpaid",
-      dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) // due in 7 days
+      dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // due in 7 days
     });
 
     res.status(201).json({ success: true, data: invoice });
-
   } catch (err) {
     console.error("CreateInvoice:", err);
     res.status(500).json({ success: false, message: "Internal Server Error" });
@@ -80,13 +97,16 @@ const getInvoiceSummary = async (req, res) => {
         $group: {
           _id: "$status",
           totalAmount: { $sum: "$totalAmount" },
-          count: { $sum: 1 }
-        }
-      }
+          count: { $sum: 1 },
+        },
+      },
     ]);
 
-    let paidAmount = 0, unpaidAmount = 0, paidCount = 0, unpaidCount = 0;
-    summary.forEach(s => {
+    let paidAmount = 0,
+      unpaidAmount = 0,
+      paidCount = 0,
+      unpaidCount = 0;
+    summary.forEach((s) => {
       if (s._id === "Paid") {
         paidAmount = s.totalAmount;
         paidCount = s.count;
@@ -102,10 +122,9 @@ const getInvoiceSummary = async (req, res) => {
       processedInvoices: paidCount + unpaidCount,
       paidAmount,
       unpaidAmount,
-      customers: paidCount,        // SRD: #customers ~ #paid invoices
-      pendingInvoices: unpaidCount // SRD: pending count
+      customers: paidCount, // SRD: #customers ~ #paid invoices
+      pendingInvoices: unpaidCount, // SRD: pending count
     });
-
   } catch (err) {
     console.error("getInvoiceSummary:", err);
     res.status(500).json({ success: false, message: "Internal Server Error" });
@@ -133,10 +152,9 @@ const getInvoices = async (req, res) => {
       pagination: {
         total,
         page,
-        pages: Math.ceil(total / limit)
-      }
+        pages: Math.ceil(total / limit),
+      },
     });
-
   } catch (err) {
     console.error("getInvoices:", err);
     res.status(500).json({ success: false, message: "Internal Server Error" });
@@ -151,11 +169,15 @@ const markInvoicePaid = async (req, res) => {
 
     const invoice = await InvoiceModel.findOne({ _id: id, owner: userId });
     if (!invoice) {
-      return res.status(404).json({ success: false, message: "Invoice not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "Invoice not found" });
     }
 
     if (invoice.status === "Paid") {
-      return res.status(400).json({ success: false, message: "Invoice already paid" });
+      return res
+        .status(400)
+        .json({ success: false, message: "Invoice already paid" });
     }
 
     // Generate Reference Number
@@ -165,8 +187,11 @@ const markInvoicePaid = async (req, res) => {
     invoice.referenceNumber = refNo;
     await invoice.save();
 
-    res.json({ success: true, message: "Invoice marked as Paid", data: invoice });
-
+    res.json({
+      success: true,
+      message: "Invoice marked as Paid",
+      data: invoice,
+    });
   } catch (err) {
     console.error("markInvoicePaid:", err);
     res.status(500).json({ success: false, message: "Internal Server Error" });
@@ -174,13 +199,18 @@ const markInvoicePaid = async (req, res) => {
 };
 const getInvoiceById = async (req, res) => {
   try {
-    const userId = req.user.userId;  // ✅ comes from JWT middleware
+    const userId = req.user.userId; // ✅ comes from JWT middleware
     const { id } = req.params;
 
-    const invoice = await InvoiceModel.findOne({ _id: id, owner: userId }).lean();
+    const invoice = await InvoiceModel.findOne({
+      _id: id,
+      owner: userId,
+    }).lean();
 
     if (!invoice) {
-      return res.status(404).json({ success: false, message: "Invoice not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "Invoice not found" });
     }
 
     res.json({ success: true, data: invoice });
@@ -189,6 +219,31 @@ const getInvoiceById = async (req, res) => {
     res.status(500).json({ success: false, message: "Internal Server Error" });
   }
 };
+const DeleteInvoice = async (req, res) => {
+  const UserId = req.user.userId;
+  const { id } = req.params;
+  try {
+    const invoice = await InvoiceModel.findOne({ _id: id });
 
+    if (!invoice) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Invoice not found" });
+    }
 
-module.exports = { CreateInvoice, getInvoiceSummary, getInvoices, markInvoicePaid,getInvoiceById };
+    const deleteInvoice=await InvoiceModel.deleteOne({_id:id})
+    res.status(200).json({success:true,data:deleteInvoice})
+  } catch (error) {
+    console.error("getInvoiceById:", error);
+    res.status(500).json({ success: false, message: "Internal Server Error" });
+  }
+};
+
+module.exports = {
+  CreateInvoice,
+  getInvoiceSummary,
+  getInvoices,
+  markInvoicePaid,
+  getInvoiceById,
+  DeleteInvoice
+};

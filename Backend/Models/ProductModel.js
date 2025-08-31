@@ -50,7 +50,7 @@ ProductSchema.pre("save", function (next) {
 ProductSchema.virtual("availability").get(function () {
   if (this.expiryDate && this.expiryDate < new Date()) return "Expired";
   if (this.quantity === 0) return "Out of Stock";
-  if (this.threshold >= this.quantity) return "Low Stock";
+  if (this.threshold > this.quantity) return "Low Stock";
   return "In Stock";
 });
 
