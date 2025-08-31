@@ -7,6 +7,7 @@ const AuthRouter = require('./Routes/AuthRoutes')
 const ProductRouter = require('./Routes/ProductRoutes')
 const InvoiceRouter = require('./Routes/InvoiceRoutes')
 const homeRouter = require('./Routes/HomeRoutes')
+const otherRouter = require('./Routes/OtherRotes')
 const Port=process.env.PORT || 8000
 app.use(cors())
 app.use(express.json())
@@ -18,6 +19,7 @@ app.use('/auth',AuthRouter)
 app.use('/product',ProductRouter)
 app.use('/invoices',InvoiceRouter)
 app.use('/dashboard',homeRouter)
+app.use('/other',otherRouter)
 
 
 app.listen(Port,()=>console.log("server started"))

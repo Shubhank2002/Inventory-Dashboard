@@ -7,6 +7,8 @@ import PurchaseOverview from "./PurchaseOverview";
 import ProductSummary from "./ProductSummary";
 import Searchere from "../Searchere";
 import axios from "axios";
+import SalesPurchaseChart from "../SalesPurchaseChart";
+import TopProducts from "../TopProducts";
 
 const Home = () => {
     
@@ -46,10 +48,12 @@ const Home = () => {
           <div id="right_part1">
             <SalesOverview salesOverview={summary?.salesOverview} />
             <PurchaseOverview purchaseOverview={summary?.purchaseOverview}/>
+            <SalesPurchaseChart/>
           </div>
           <div id="right_part2">
             <InventorySummary inventorySummary={summary?.inventorySummary}/>
             <ProductSummary productSummary={summary?.productSummary} />
+            <TopProducts/>
           </div>
         </div>
       </div>

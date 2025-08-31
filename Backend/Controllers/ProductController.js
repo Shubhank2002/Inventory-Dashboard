@@ -18,12 +18,10 @@ const CreateSingleProduct = async (req, res) => {
   const userId = req.user.userId;
   if (!name || price == null || costPrice == null) {
     if (req.file) fs.unlinkSync(req.file.path);
-    return res
-      .status(400)
-      .json({
-        success: false,
-        message: "Name and price are cost price are  required ",
-      });
+    return res.status(400).json({
+      success: false,
+      message: "Name and price are cost price are  required ",
+    });
   }
 
   if (expiryDate && new Date(expiryDate) < new Date()) {
@@ -34,7 +32,10 @@ const CreateSingleProduct = async (req, res) => {
   }
 
   if (productId) {
-    const exists = await ProductModel.findOne({ productId: productId.trim() });
+    const exists = await ProductModel.findOne({
+      productId: productId.trim(),
+      owner: userId,
+    });
     if (exists) {
       if (req.file) fs.unlinkSync(req.file.path);
       return res
@@ -89,7 +90,7 @@ const CreateMultipleProducts = async (req, res) => {
       try {
         // 2) Normalize + validate each row
         const normalize = (r) => {
-          const o = {
+          return {
             name: r.name?.trim().toLowerCase(),
             productId: r.productId?.trim(),
             category: r.category?.trim().toLowerCase(),
@@ -108,19 +109,18 @@ const CreateMultipleProducts = async (req, res) => {
             expiryDate: r.expiryDate ? new Date(r.expiryDate) : undefined,
             owner: userId,
           };
-          return o;
         };
 
         const isValid = (o) => {
           if (!o.name || !o.productId) return false;
-          if (o.price == null || Number.isNaN(o.price) || o.price <= 0)
+          if (o.price == null || Number.isNaN(o.price) || o.price < 0)
             return false;
           if (
             o.costPrice == null ||
             Number.isNaN(o.costPrice) ||
-            o.costPrice <= 0
+            o.costPrice < 0
           )
-            return false; // ✅ mandatory
+            return false; // ✅ costPrice mandatory, allow 0 but not negative
           if (Number.isNaN(o.quantity) || o.quantity < 0) return false;
           if (Number.isNaN(o.threshold) || o.threshold < 0) return false;
           if (o.expiryDate && isNaN(o.expiryDate.getTime())) return false;
@@ -153,7 +153,7 @@ const CreateMultipleProducts = async (req, res) => {
           normalized.push(o);
         }
 
-        // 4) Filter out productIds that already exist in DB
+        // 4) Filter out productIds that already exist in DB for this owner
         const ids = normalized.map((x) => x.productId);
         const existingDocs = await ProductModel.find(
           { productId: { $in: ids }, owner: userId },
@@ -168,7 +168,7 @@ const CreateMultipleProducts = async (req, res) => {
           return !isDup;
         });
 
-        // 5) Insert (skip any remaining dup race conditions)
+        // 5) Insert (skip race-condition duplicates)
         let insertedDocs = [];
         if (toInsert.length) {
           try {
@@ -176,16 +176,17 @@ const CreateMultipleProducts = async (req, res) => {
               ordered: false,
             });
           } catch (err) {
-            // Handle duplicate key errors gracefully (E11000)
-            // Some may have failed; others inserted.
             if (err.writeErrors?.length) {
               for (const we of err.writeErrors) {
-                if (we.code === 11000) dbDupCount++; // duplicate in DB during race
+                if (we.code === 11000) {
+                  dbDupCount++; // duplicate in DB (unique index on owner + productId)
+                  console.warn(
+                    "Duplicate productId for this owner:",
+                    we.errmsg
+                  );
+                }
               }
-              // Collect the ones that did insert:
               if (err.result?.result?.nInserted) {
-                // Mongoose 6+ may not always populate insertedDocs; we can refetch by ids if needed
-                // For brevity, we’ll just report nInserted:
                 insertedDocs = new Array(err.result.result.nInserted).fill(
                   null
                 );
@@ -201,8 +202,9 @@ const CreateMultipleProducts = async (req, res) => {
           }
         }
 
+        // 6) Final summary
         const summary = {
-          processed, // total rows read from CSV
+          processed,
           inserted: insertedDocs.length,
           skipped: {
             csvDuplicates: csvDupCount,
@@ -213,7 +215,7 @@ const CreateMultipleProducts = async (req, res) => {
 
         return res.status(201).json({
           success: true,
-          message: `Inserted ${summary.inserted}. Skipped CSV dup: ${csvDupCount}, DB dup: ${dbDupCount}, invalid: ${invalidCount}.`,
+          message: `Inserted ${summary.inserted}. Skipped ${csvDupCount} duplicate(s) in CSV, ${dbDupCount} product(s) already exist for this owner, and ${invalidCount} invalid row(s).`,
           summary,
         });
       } catch (err) {
@@ -224,9 +226,8 @@ const CreateMultipleProducts = async (req, res) => {
           error: err.message,
         });
       } finally {
-        // optional: delete uploaded CSV after processing
         try {
-          fs.unlinkSync(filePath);
+          fs.unlinkSync(filePath); // ✅ delete uploaded CSV
         } catch {}
       }
     })

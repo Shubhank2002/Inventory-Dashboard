@@ -39,7 +39,6 @@ const ProductSchema = new mongoose.Schema(
       type: String,
       required: true,
       trim: true,
-      unique: true,
       index: true,
     },
     imageUrl: { type: String, trim: true },
@@ -51,6 +50,9 @@ const ProductSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+
+// ✅ Compound unique index: productId must be unique per owner
+ProductSchema.index({ owner: 1, productId: 1 }, { unique: true });
 
 // Pre-save clean-up
 ProductSchema.pre("save", function (next) {

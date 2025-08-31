@@ -1,6 +1,6 @@
 const InvoiceModel = require("../Models/InvoiceModel");
 const ProductModel = require("../Models/ProductModel");
-const mongoose=require('mongoose')
+const mongoose = require("mongoose");
 
 const getDashboardSummary = async (req, res) => {
   try {
@@ -14,8 +14,8 @@ const getDashboardSummary = async (req, res) => {
           from: "products",
           localField: "items.product",
           foreignField: "_id",
-          as: "productDetails"
-        }
+          as: "productDetails",
+        },
       },
       { $unwind: "$items" },
       {
@@ -23,8 +23,8 @@ const getDashboardSummary = async (req, res) => {
           from: "products",
           localField: "items.product",
           foreignField: "_id",
-          as: "prod"
-        }
+          as: "prod",
+        },
       },
       { $unwind: "$prod" },
       {
@@ -32,16 +32,15 @@ const getDashboardSummary = async (req, res) => {
           _id: null,
           salesCount: { $sum: 1 }, // count invoices
           revenue: { $sum: "$items.total" }, // selling revenue
-          cost: { $sum: { $multiply: ["$items.quantity", "$prod.costPrice"] } } // actual purchase cost
-        }
-      }
+          cost: { $sum: { $multiply: ["$items.quantity", "$prod.costPrice"] } }, // actual purchase cost
+        },
+      },
     ]);
 
     const salesOverview = {
       sales: salesAgg[0]?.salesCount || 0,
       revenue: salesAgg[0]?.revenue || 0,
-      profit:
-        (salesAgg[0]?.revenue || 0) - (salesAgg[0]?.cost || 0),
+      profit: (salesAgg[0]?.revenue || 0) - (salesAgg[0]?.cost || 0),
       cost: salesAgg[0]?.cost || 0,
     };
 
@@ -49,14 +48,36 @@ const getDashboardSummary = async (req, res) => {
     const purchaseAgg = await ProductModel.aggregate([
       { $match: { owner: userId } },
       {
+        $lookup: {
+          from: "invoices",
+          let: { productId: "$_id" },
+          pipeline: [
+            { $unwind: "$items" },
+            { $match: { $expr: { $eq: ["$items.product", "$$productId"] } } },
+            { $group: { _id: null, soldQty: { $sum: "$items.quantity" } } },
+          ],
+          as: "soldData",
+        },
+      },
+      {
+        $addFields: {
+          soldQty: { $ifNull: [{ $arrayElemAt: ["$soldData.soldQty", 0] }, 0] },
+          purchasedQty: {
+            $add: [
+              "$quantity",
+              { $ifNull: [{ $arrayElemAt: ["$soldData.soldQty", 0] }, 0] },
+            ],
+          },
+        },
+      },
+      {
         $group: {
           _id: null,
-          totalPurchase: { $sum: "$quantity" }, // total units purchased
-          totalCost: { $sum: { $multiply: ["$costPrice", "$quantity"] } },
-        }
-      }
+          totalPurchase: { $sum: "$purchasedQty" },
+          totalCost: { $sum: { $multiply: ["$costPrice", "$purchasedQty"] } },
+        },
+      },
     ]);
-
     const purchaseOverview = {
       purchase: purchaseAgg[0]?.totalPurchase || 0,
       cost: purchaseAgg[0]?.totalCost || 0,
@@ -71,8 +92,8 @@ const getDashboardSummary = async (req, res) => {
         $group: {
           _id: null,
           quantityInHand: { $sum: "$quantity" },
-        }
-      }
+        },
+      },
     ]);
 
     const inventorySummary = {
@@ -81,7 +102,9 @@ const getDashboardSummary = async (req, res) => {
     };
 
     // --- 4) PRODUCT SUMMARY ---
-    const categories = await ProductModel.distinct("category", { owner: userId });
+    const categories = await ProductModel.distinct("category", {
+      owner: userId,
+    });
 
     const productSummary = {
       numberOfSuppliers: 0, // placeholder (no SupplierModel yet)
@@ -94,13 +117,12 @@ const getDashboardSummary = async (req, res) => {
       purchaseOverview,
       inventorySummary,
       productSummary,
-      success:true
+      success: true,
     });
-
   } catch (err) {
     console.error("getDashboardSummary:", err);
     res.status(500).json({ success: false, message: "Internal Server Error" });
   }
 };
 
-module.exports={getDashboardSummary}
+module.exports = { getDashboardSummary };
