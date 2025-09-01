@@ -6,6 +6,8 @@ import axios from "axios";
 
 const Invoice = () => {
   const [openInvoice, setopenInvoice] = useState(false);
+  const [draggingItem, setDraggingItem] = useState(null);
+
   const [summary, setSummary] = useState(null);
   const [invoices, setInvoices] = useState([]);
   const [page, setPage] = useState(1);
@@ -41,6 +43,42 @@ const Invoice = () => {
     } catch (err) {
       console.error("Error fetching invoices:", err);
     }
+  };
+
+  const handleDragStart = (e) => {
+    setDraggingItem(e.currentTarget);
+  };
+
+  const handleDrop = (e, containerId) => {
+    e.preventDefault();
+    const container = document.getElementById(containerId);
+    if (draggingItem && container) {
+      const afterElement = getDragAfterElement(container, e.clientY);
+      if (afterElement == null) {
+        container.appendChild(draggingItem);
+      } else {
+        container.insertBefore(draggingItem, afterElement);
+      }
+    }
+  };
+
+  const getDragAfterElement = (container, y) => {
+    const draggableElements = [
+      ...container.querySelectorAll(".draggable-menu-item:not(.dragging)"),
+    ];
+
+    return draggableElements.reduce(
+      (closest, child) => {
+        const box = child.getBoundingClientRect();
+        const offset = y - box.top - box.height / 2;
+        if (offset < 0 && offset > closest.offset) {
+          return { offset: offset, element: child };
+        } else {
+          return closest;
+        }
+      },
+      { offset: Number.NEGATIVE_INFINITY }
+    ).element;
   };
 
   useEffect(() => {
@@ -284,6 +322,9 @@ const Invoice = () => {
 
                 {menuOpenId === inv._id && (
                   <div
+                    id="menuopendiv"
+                    onDragOver={(e) => e.preventDefault()}
+                    onDrop={(e) => handleDrop(e, "menuopendiv")}
                     style={{
                       position: "absolute",
                       right: 0,
@@ -296,12 +337,15 @@ const Invoice = () => {
                     }}
                   >
                     <button
+                      className="draggable-menu-item"
+                      draggable
+                      onDragStart={handleDragStart}
+                      onClick={() => handleView(inv._id)}
                       style={{
                         cursor: "pointer",
                         display: "block",
                         width: "100%",
                       }}
-                      onClick={() => handleView(inv._id)}
                     >
                       View Invoice
                     </button>
@@ -313,6 +357,9 @@ const Invoice = () => {
                           width: "100%",
                         }}
                         onClick={() => handleMarkPaid(inv._id)}
+                        className="draggable-menu-item"
+                        draggable
+                        onDragStart={handleDragStart}
                       >
                         Mark as Paid
                       </button>
@@ -324,6 +371,9 @@ const Invoice = () => {
                         display: "block",
                         width: "100%",
                       }}
+                      className="draggable-menu-item"
+                      draggable
+                      onDragStart={handleDragStart}
                       onClick={() => setDeleteInvoiceId(inv._id)}
                     >
                       Delete
@@ -333,7 +383,7 @@ const Invoice = () => {
               </div>
             </div>
           ))}
-          <div style={{marginTop:'20px'}}>
+          <div style={{ marginTop: "20px" }}>
             <div style={{ display: "flex", justifyContent: "space-between" }}>
               <button disabled={page === 1} onClick={() => setPage(page - 1)}>
                 Previous

@@ -1,9 +1,9 @@
 const InvoiceModel = require("../Models/InvoiceModel");
 const ProductModel = require("../Models/ProductModel");
-const mongoose=require('mongoose')
-
+const mongoose = require("mongoose");
+const UserModel = require("../Models/UserModel");
+const bcrypt = require("bcryptjs");
 // controller/salesPurchase.js
-
 
 const getSalesPurchase = async (req, res) => {
   try {
@@ -11,19 +11,22 @@ const getSalesPurchase = async (req, res) => {
     const { period = "monthly" } = req.query;
 
     // Define grouping format
-    const groupFormat = period === "weekly"
-      ? { $isoWeek: "$createdAt" }   // 1–52
-      : { $month: "$createdAt" };    // 1–12
+    const groupFormat =
+      period === "weekly"
+        ? { $isoWeek: "$createdAt" } // 1–52
+        : { $month: "$createdAt" }; // 1–12
 
     const salesAgg = await InvoiceModel.aggregate([
-      { $match: { owner: new mongoose.Types.ObjectId(userId), status: "Paid" } },
+      {
+        $match: { owner: new mongoose.Types.ObjectId(userId), status: "Paid" },
+      },
       {
         $group: {
           _id: groupFormat,
-          totalSales: { $sum: "$totalAmount" }
-        }
+          totalSales: { $sum: "$totalAmount" },
+        },
       },
-      { $sort: { _id: 1 } }
+      { $sort: { _id: 1 } },
     ]);
 
     const purchaseAgg = await ProductModel.aggregate([
@@ -31,10 +34,10 @@ const getSalesPurchase = async (req, res) => {
       {
         $group: {
           _id: groupFormat,
-          totalPurchase: { $sum: { $multiply: ["$costPrice", "$quantity"] } }
-        }
+          totalPurchase: { $sum: { $multiply: ["$costPrice", "$quantity"] } },
+        },
       },
-      { $sort: { _id: 1 } }
+      { $sort: { _id: 1 } },
     ]);
 
     // Merge into chart-friendly format
@@ -43,13 +46,19 @@ const getSalesPurchase = async (req, res) => {
       merged[s._id] = { label: s._id, sales: s.totalSales, purchase: 0 };
     });
     purchaseAgg.forEach((p) => {
-      if (!merged[p._id]) merged[p._id] = { label: p._id, sales: 0, purchase: 0 };
+      if (!merged[p._id])
+        merged[p._id] = { label: p._id, sales: 0, purchase: 0 };
       merged[p._id].purchase = p.totalPurchase;
     });
 
     // Convert _id to month/Week names
     const formatted = Object.values(merged).map((d) => ({
-      label: period === "weekly" ? `Week ${d.label}` : new Date(2025, d.label - 1).toLocaleString("default", { month: "short" }),
+      label:
+        period === "weekly"
+          ? `Week ${d.label}`
+          : new Date(2025, d.label - 1).toLocaleString("default", {
+              month: "short",
+            }),
       sales: d.sales,
       purchase: d.purchase,
     }));
@@ -63,7 +72,6 @@ const getSalesPurchase = async (req, res) => {
 // controller/topProducts.js
 // controllers/dashboardController.js
 
-
 const getTopProducts = async (req, res) => {
   try {
     const userId = req.user.userId;
@@ -75,11 +83,11 @@ const getTopProducts = async (req, res) => {
         $group: {
           _id: "$items.product",
           name: { $first: "$items.name" },
-          totalQty: { $sum: "$items.quantity" }
-        }
+          totalQty: { $sum: "$items.quantity" },
+        },
       },
       { $sort: { totalQty: -1 } },
-      { $limit: 6 }
+      { $limit: 6 },
     ]);
 
     res.json({ success: true, topProducts });
@@ -88,7 +96,6 @@ const getTopProducts = async (req, res) => {
     res.status(500).json({ success: false, message: "Internal Server Error" });
   }
 };
-
 
 const getRevenueAndStock = async (req, res) => {
   try {
@@ -102,7 +109,9 @@ const getRevenueAndStock = async (req, res) => {
 
     // ----- 1. Total Revenue (this month vs last month)
     const revenueAgg = await InvoiceModel.aggregate([
-      { $match: { owner: new mongoose.Types.ObjectId(userId), status: "Paid" } },
+      {
+        $match: { owner: new mongoose.Types.ObjectId(userId), status: "Paid" },
+      },
       {
         $facet: {
           thisMonth: [
@@ -110,7 +119,11 @@ const getRevenueAndStock = async (req, res) => {
             { $group: { _id: null, total: { $sum: "$totalAmount" } } },
           ],
           lastMonth: [
-            { $match: { createdAt: { $gte: startOfLastMonth, $lte: endOfLastMonth } } },
+            {
+              $match: {
+                createdAt: { $gte: startOfLastMonth, $lte: endOfLastMonth },
+              },
+            },
             { $group: { _id: null, total: { $sum: "$totalAmount" } } },
           ],
         },
@@ -125,7 +138,9 @@ const getRevenueAndStock = async (req, res) => {
 
     // ----- 2. Products Sold (this month vs last month)
     const soldAgg = await InvoiceModel.aggregate([
-      { $match: { owner: new mongoose.Types.ObjectId(userId), status: "Paid" } },
+      {
+        $match: { owner: new mongoose.Types.ObjectId(userId), status: "Paid" },
+      },
       {
         $facet: {
           thisMonth: [
@@ -134,7 +149,11 @@ const getRevenueAndStock = async (req, res) => {
             { $group: { _id: null, total: { $sum: "$items.quantity" } } },
           ],
           lastMonth: [
-            { $match: { createdAt: { $gte: startOfLastMonth, $lte: endOfLastMonth } } },
+            {
+              $match: {
+                createdAt: { $gte: startOfLastMonth, $lte: endOfLastMonth },
+              },
+            },
             { $unwind: "$items" },
             { $group: { _id: null, total: { $sum: "$items.quantity" } } },
           ],
@@ -184,9 +203,47 @@ const getRevenueAndStock = async (req, res) => {
   }
 };
 
+const EditProfile = async (req, res) => {
+  const { name, email, password } = req.body;
+  const userId = req.user.userId;
 
+  try {
+    
+    const originalUser = await UserModel.findOne({ _id: userId });
+     if (!originalUser) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+    if (originalUser.email !== email) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Please Enter only your Email" });
+    }
+    const samepassword=await bcrypt.compare(password,originalUser.password)
 
+    if(samepassword){
+      return res.status(400).json({success:false,message:'new and old password cannot be same'})
+    }
+    const hashPassword=await bcrypt.hash(password,10)
 
+    const updated_user = await UserModel.findByIdAndUpdate(
+      userId,
+      { $set: { name, password:hashPassword } },{new:true}
+    );
 
+    res
+      .status(200)
+      .json({
+        success: true,
+        message: "successfully changed password or name",
+      });
+  } catch (error) {
+    res.status(500).json({success:false,message:'something went wrong..'})
+  }
+};
 
-module.exports={getSalesPurchase,getTopProducts,getRevenueAndStock}
+module.exports = {
+  getSalesPurchase,
+  getTopProducts,
+  getRevenueAndStock,
+  EditProfile,
+};

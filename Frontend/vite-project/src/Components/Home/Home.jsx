@@ -11,10 +11,16 @@ import SalesPurchaseChart from "../SalesPurchaseChart";
 import TopProducts from "../TopProducts";
 
 const Home = () => {
-    
-    const [summary, setSummary] = useState(null);
-    const [loading, setloading] = useState(true)
-    useEffect(() => {
+  const [summary, setSummary] = useState(null);
+  const [loading, setloading] = useState(true);
+
+  // Drag state
+  const [draggingIndex, setDraggingIndex] = useState(null);
+
+  const [rightPart1Items, setRightPart1Items] = useState([]);
+  const [rightPart2Items, setRightPart2Items] = useState([]);
+
+  useEffect(() => {
     const fetchSummary = async () => {
       try {
         const jsontoken = localStorage.getItem("token");
@@ -23,37 +29,89 @@ const Home = () => {
 
         const { data } = await axios.get("http://localhost:8000/dashboard/summary", { headers });
         setSummary(data);
+
+        // initialize draggable items after data fetch
+        setRightPart1Items([
+          { id: 1, component: <SalesOverview salesOverview={data?.salesOverview} /> },
+          { id: 2, component: <PurchaseOverview purchaseOverview={data?.purchaseOverview} /> },
+          { id: 3, component: <SalesPurchaseChart /> },
+        ]);
+
+        setRightPart2Items([
+          { id: 4, component: <InventorySummary inventorySummary={data?.inventorySummary} /> },
+          { id: 5, component: <ProductSummary productSummary={data?.productSummary} /> },
+          { id: 6, component: <TopProducts /> },
+        ]);
       } catch (err) {
         console.error("Error fetching dashboard summary:", err);
-      }finally{
-        setloading(false)
+      } finally {
+        setloading(false);
       }
     };
 
     fetchSummary();
   }, []);
-   if (loading) {
+
+  if (loading) {
     return <div style={{ color: "white" }}>Loading dashboard...</div>;
   }
+
+  // Drag Handlers
+  const handleDragStart = (index) => {
+    setDraggingIndex(index);
+  };
+
+  const handleDrop = (index, items, setItems) => {
+    const newItems = [...items];
+    const draggedItem = newItems[draggingIndex];
+    newItems.splice(draggingIndex, 1);
+    newItems.splice(index, 0, draggedItem);
+    setItems(newItems);
+    setDraggingIndex(null);
+  };
+
   return (
     <div id="home_container">
       <Sidebar />
       <div id="right_part">
         <div id="right_first_div">
-          <h1 style={{fontSize:'20px',color:'white',margin:'10px 0'}}>Home</h1>
-          <Searchere/>
+          <h1 style={{ fontSize: "1.25rem", color: "white", margin: "0.625rem 0" }}>
+            Home
+          </h1>
+          <Searchere />
         </div>
-        
+
         <div id="right_part_1">
+          {/* Right Part 1 Drag & Drop */}
           <div id="right_part1">
-            <SalesOverview salesOverview={summary?.salesOverview} />
-            <PurchaseOverview purchaseOverview={summary?.purchaseOverview}/>
-            <SalesPurchaseChart/>
+            {rightPart1Items.map((item, index) => (
+              <div
+                key={item.id}
+                className="draggable-card"
+                draggable
+                onDragStart={() => handleDragStart(index)}
+                onDragOver={(e) => e.preventDefault()}
+                onDrop={() => handleDrop(index, rightPart1Items, setRightPart1Items)}
+              >
+                {item.component}
+              </div>
+            ))}
           </div>
+
+          {/* Right Part 2 Drag & Drop */}
           <div id="right_part2">
-            <InventorySummary inventorySummary={summary?.inventorySummary}/>
-            <ProductSummary productSummary={summary?.productSummary} />
-            <TopProducts/>
+            {rightPart2Items.map((item, index) => (
+              <div
+                key={item.id}
+                className="draggable-card"
+                draggable
+                onDragStart={() => handleDragStart(index)}
+                onDragOver={(e) => e.preventDefault()}
+                onDrop={() => handleDrop(index, rightPart2Items, setRightPart2Items)}
+              >
+                {item.component}
+              </div>
+            ))}
           </div>
         </div>
       </div>

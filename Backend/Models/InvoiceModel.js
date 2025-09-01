@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 
 const InvoiceSchema = new mongoose.Schema({
-  invoiceId: { type: String, unique: true }, // ex: INV-1001
+  invoiceId: { type: String,}, // ex: INV-1001
   owner: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
 
   items: [
@@ -21,10 +21,12 @@ const InvoiceSchema = new mongoose.Schema({
 
 }, { timestamps: true });
 
+InvoiceSchema.index({owner:1,invoiceId:1},{unique:true})
+
 // Auto-generate invoiceId (like INV-1001)
 InvoiceSchema.pre("save", async function (next) {
-  if (this.isNew) {
-    const count = await mongoose.model("Invoice").countDocuments();
+  if (this.isNew && !this.invoiceId) {
+    const count = await mongoose.model("Invoice").countDocuments({owner:this.owner});
     this.invoiceId = `INV-${1001 + count}`;
   }
   next();
