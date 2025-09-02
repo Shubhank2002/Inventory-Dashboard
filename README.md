@@ -11,7 +11,9 @@ Backend: https://inventory-dashboard-backend-hxjm.onrender.com
 
 👤 Demo Credentials
 Email: maheshwarishubhank2002@gmail.com
+
 Password: shubhank123
+
 
 🛠️ Tech Stack
 
