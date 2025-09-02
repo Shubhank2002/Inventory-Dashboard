@@ -35,8 +35,8 @@ const TopProducts = () => {
         const stars = Math.max(5 - idx, 1); // 1st=5, 2nd=4 … 5th=1
 
         return (
-          <div key={idx} style={{ gap:'16px',display:'flex',flexDirection:'column',alignItems:'center' }}>
-            <p style={{ margin: "0 0 8px 0" ,alignSelf:'flex-start'}}>
+          <div key={idx} style={{ gap:'8px',display:'flex',flexDirection:'column',alignItems:'center',marginBottom:'15px' }}>
+            <p style={{ margin: "0 0 8px 0" ,alignSelf:'flex-start',fontWeight:'bold'}}>
               {p.name} 
             </p>
             <div style={{ display: "flex", gap: "4px" }}>
