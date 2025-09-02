@@ -5,13 +5,13 @@ Includes custom drag-and-drop (no external library), invoice management, search 
 
 🚀 Live Demo
 
-Frontend: [Your Netlify/Render link here]
+Frontend: https://inventory-dashboard-mtp3.onrender.com
 
-Backend: [Your Render link here]
+Backend: https://inventory-dashboard-backend-hxjm.onrender.com
 
 👤 Demo Credentials
-Email: demo@example.com
-Password: Demo@123
+Email: maheshwarishubhank2002@gmail.com
+Password: shubhank123
 
 🛠️ Tech Stack
 
@@ -23,7 +23,7 @@ Vanilla Modular CSS
 
 React Toastify (for notifications)
 
-Chart.js / Recharts (for graphs)
+ Recharts (for graphs)
 
 Backend
 
@@ -39,7 +39,7 @@ Node-cron for expiry cleanup
 
 Hosting
 
-Frontend → Netlify/Render
+Frontend → Render
 
 Backend → Render
 
@@ -62,9 +62,9 @@ Drag-and-drop support for reordering widgets/cards (persisted in DB)
 
 🔹 Product Management
 
-Add / Edit / Delete products
+Add / Delete products
 
-Product attributes: name, price, quantity, threshold, expiry date, unit
+Product attributes: name, price, quantity, threshold, expiry date, unit, productid (mandatory!)
 
 Auto-calculated availability (In Stock, Low Stock, Out of Stock, Expired)
 
@@ -84,7 +84,7 @@ Invoice list with Paid/Unpaid status
 
 Update status → generates reference number automatically
 
-Export invoice as PDF / Print option
+Download invoice as PDF 
 
 Pagination & search supported
 
@@ -102,7 +102,7 @@ Drag-and-drop functionality applied in horizontal sections
 
 User profile management
 
-Reset dashboard layout
+
 
 🔹 Authentication & Authorization
 
@@ -121,6 +121,22 @@ Session maintained via JWT tokens
 Toast notifications for success & error events
 
 Form validation & error handling on frontend & backend
+
+
+⚠️ Precautions & Notes
+
+While creating a product, the user must provide a unique productId (per owner).
+
+For CSV bulk uploads, the CSV file must contain a productId column; otherwise, rows will be skipped.
+
+The system uses a cron job to automatically mark products as Expired and set their quantity to 0 once past expiry date.
+
+Search & pagination are handled in the backend; frontend should not attempt filtering large lists.
+
+Passwords are always stored encrypted; never use plain text.
+
+The invoiceId is generated automatically — users should not try to override it.
+
 
 ⚡ Installation & Setup Instructions
 1. Clone the repository
@@ -149,46 +165,9 @@ cd frontend/vite-project
 npm install
 
 
-Create .env file:
-
-VITE_API_URL=https://your-backend.onrender.com
-
-
 Run frontend:
 
 npm run dev
 
 
-Build for production:
 
-npm run build
-
-✅ Submission Checklist
-
- Pixel perfect UI with modular CSS
-
- JWT auth with password encryption
-
- CSV upload for multiple products
-
- Backend-driven search & pagination
-
- Invoice export as PDF
-
- Cron job for expired products
-
- Proper error handling (frontend + backend)
-
- Live deployment (frontend + backend)
-
-📊 Evaluation Criteria
-
-Coding standards & best practices followed
-
-All checklist functionalities implemented
-
-Edge cases & validations handled
-
-Proper error handling
-
-Secure authentication
