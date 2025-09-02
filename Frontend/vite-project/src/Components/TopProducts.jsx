@@ -12,7 +12,10 @@ const TopProducts = () => {
         const token = JSON.parse(jsontoken);
         const headers = { Authorization: `Bearer ${token}` };
 
-        const { data } = await axios.get("https://inventory-dashboard-backend-hxjm.onrender.com/other/top-products", { headers });
+        const { data } = await axios.get(
+          "https://inventory-dashboard-backend-hxjm.onrender.com/other/top-products",
+          { headers }
+        );
         setProducts(data.topProducts || []);
       } catch (err) {
         console.error("Error fetching top products:", err);
@@ -23,35 +26,29 @@ const TopProducts = () => {
   }, []);
 
   // find max to normalize bar widths
-  const maxQty = Math.max(...products.map(p => p.totalQty), 1);
+  const maxQty = Math.max(...products.map((p) => p.totalQty), 1);
 
   return (
-    <div style={{ background: "#fff", padding: "20px", borderRadius: "12px" ,}}>
+    <div style={{ background: "#fff", padding: "20px", borderRadius: "12px" }}>
       <h3 style={{ marginBottom: "15px" }}>Top Products</h3>
-      {products.map((p, idx) => (
-        <div key={idx} style={{ marginBottom: "12px",display:'flex',flexDirection:'column',alignItems:'center'}}>
-          <p style={{ margin: "0 0 8px 0",alignSelf:'flex-start' }}>{p.name}</p>
-          <div
-            style={{
-              display: "flex",
-              gap: "4px",
-              
-            }}
-          >
-            {Array.from({ length: Math.round((p.totalQty / maxQty) * 6) }).map((_, i) => (
-              <div
-                key={i}
-                style={{
-                  width: "20px",
-                  height: "8px",
-                  backgroundColor: "#FFD700",
-                  borderRadius: "4px"
-                }}
-              ></div>
-            ))}
+      {products.slice(0, 5).map((p, idx) => {
+        const stars = Math.max(5 - idx, 1); // 1st=5, 2nd=4 … 5th=1
+
+        return (
+          <div key={idx} style={{ marginBottom: "12px" }}>
+            <p style={{ margin: "0 0 8px 0" }}>
+              {p.name} - ₹{p.totalRevenue}
+            </p>
+            <div style={{ display: "flex", gap: "4px" }}>
+              {Array.from({ length: stars }).map((_, i) => (
+                <span key={i} style={{ color: "#FFD700", fontSize: "18px" }}>
+                  ★
+                </span>
+              ))}
+            </div>
           </div>
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 };
