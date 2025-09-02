@@ -28,3 +28,13 @@
     cursor: pointer;
     margin-top: 40px;
 }
+#editLogoutbutton{
+     width: 205px;
+    margin: auto;
+    background-color: #242531;
+    color: white;
+    border-radius: 10px;
+    height: 50px;
+    cursor: pointer;
+    margin-top: 40px;
+}

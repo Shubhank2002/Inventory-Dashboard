@@ -5,17 +5,18 @@ import { useEffect } from "react";
 import axios from "axios";
 import { useRef } from "react";
 import { toast } from "react-toastify";
-
+import { useNavigate } from "react-router-dom";
 
 const EditProfile = () => {
-    const formRef = useRef(null);
-    const initial_state={
+  const formRef = useRef(null);
+  const navigate=useNavigate()
+  const initial_state = {
     fname: "",
     lname: "",
     email: "",
     password: "",
     confirm_password: "",
-  }
+  };
   const [form, setform] = useState({
     fname: "",
     lname: "",
@@ -25,10 +26,7 @@ const EditProfile = () => {
   });
   const [Errmsg, setErrmsg] = useState("");
   const [loading, setloading] = useState(false);
-  const [bool, setbool] = useState(false)
-
- 
-  
+  const [bool, setbool] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -37,7 +35,7 @@ const EditProfile = () => {
       [name]: value,
     }));
   };
-    const handleKeyDown = (e) => {
+  const handleKeyDown = (e) => {
     if (e.key === "Enter") {
       e.preventDefault(); // stop default submit on Enter
 
@@ -57,34 +55,33 @@ const EditProfile = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setErrmsg('')
+    setErrmsg("");
     setloading(true);
-    setbool(false)
+    setbool(false);
     if (!form.fname.trim() || !form.email.trim()) {
-        setloading(false)
+      setloading(false);
       setErrmsg("Name or Email field cannot be empty");
-      setform(initial_state)
+      setform(initial_state);
       return;
-     
     }
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if(!emailRegex.test(form.email)){
-         setErrmsg('Please enter a valid email')
-         setloading(false)
-          setform(initial_state)
-         return;
+    if (!emailRegex.test(form.email)) {
+      setErrmsg("Please enter a valid email");
+      setloading(false);
+      setform(initial_state);
+      return;
     }
     if (form.confirm_password !== form.password) {
-       setErrmsg("Password and Confirm Password are not matching");
-       setloading(false)
-        setform(initial_state)
-       return;
+      setErrmsg("Password and Confirm Password are not matching");
+      setloading(false);
+      setform(initial_state);
+      return;
     }
     if (form.password.length < 8) {
-       setErrmsg("Password should have at least 8 digits");
-       setloading(false)
-        setform(initial_state)
-       return;
+      setErrmsg("Password should have at least 8 digits");
+      setloading(false);
+      setform(initial_state);
+      return;
     }
     try {
       const new_form = {
@@ -100,13 +97,14 @@ const EditProfile = () => {
         new_form,
         { headers }
       );
-      setErrmsg('Profile Edited successfully')
-      toast.success('Profile Edited Successfully',{position:'top-center'})
-      setbool(true)
-      
+      setErrmsg("Profile Edited successfully");
+      toast.success("Profile Edited Successfully", { position: "top-center" });
+      setbool(true);
     } catch (error) {
       console.log(error);
-      toast.error(error?.response?.data?.message || 'error occured',{position:'top-center'})
+      toast.error(error?.response?.data?.message || "error occured", {
+        position: "top-center",
+      });
       setErrmsg(error?.response?.data?.message);
     } finally {
       setloading(false);
@@ -119,11 +117,16 @@ const EditProfile = () => {
       });
     }
   };
+  const logout = () => {
+    localStorage.removeItem("token"); // remove JWT
+    localStorage.removeItem("user"); // if you stored user details
+   navigate('/login')   // redirect to login page
+  };
 
   return (
     <div>
       <form
-      ref={formRef}
+        ref={formRef}
         action=""
         style={{
           alignSelf: "flex-start",
@@ -155,7 +158,7 @@ const EditProfile = () => {
             value={form.lname}
             name="lname"
             onChange={handleChange}
-             onKeyDown={handleKeyDown}
+            onKeyDown={handleKeyDown}
           />
         </div>
         <div className="settinginputdiv">
@@ -167,7 +170,7 @@ const EditProfile = () => {
             value={form.email}
             name="email"
             onChange={handleChange}
-             onKeyDown={handleKeyDown}
+            onKeyDown={handleKeyDown}
           />
         </div>
         <div className="settinginputdiv">
@@ -179,7 +182,7 @@ const EditProfile = () => {
             value={form.password}
             name="password"
             onChange={handleChange}
-             onKeyDown={handleKeyDown}
+            onKeyDown={handleKeyDown}
           />
         </div>
         <div className="settinginputdiv">
@@ -191,20 +194,22 @@ const EditProfile = () => {
             value={form.confirm_password}
             name="confirm_password"
             onChange={handleChange}
-             onKeyDown={handleKeyDown}
+            onKeyDown={handleKeyDown}
           />
         </div>
         <button id="editProfilebutton" type="submit" disabled={loading}>
           {loading ? "Saving" : "Save"}
         </button>
+       
         {Errmsg && (
-          <div
-            style={{ fontSize: "16px", color: bool?'green':'crimson', }}
-          >
+          <div style={{ fontSize: "16px", color: bool ? "green" : "crimson" }}>
             {Errmsg}
           </div>
         )}
       </form>
+       <button id="editLogoutbutton" onClick={logout}>
+          Logout
+        </button>
     </div>
   );
 };
