@@ -14,6 +14,8 @@ Email: maheshwarishubhank2002@gmail.com
 
 Password: shubhank123
 
+Note : Please wait for 10-20 seconds initially after clicking on frontend link, as render takes this much time to fetch data  from backend.
+
 
 🛠️ Tech Stack
 
