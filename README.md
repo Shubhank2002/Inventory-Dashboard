@@ -26,6 +26,7 @@ Vanilla Modular CSS
 React Toastify (for notifications)
 
  Recharts (for graphs)
+ 
 
 Backend
 
@@ -39,13 +40,16 @@ Bcryptjs for password encryption
 
 Node-cron for expiry cleanup
 
+
 Hosting
 
 Frontend → Render
 
 Backend → Render
 
+
 📌 Features Implemented
+
 🔹 Dashboard (Home)
 
 Sales overview (Sales, Revenue, Profit, Cost)
@@ -61,6 +65,7 @@ Sales & Purchase graphs (Weekly/Monthly/Yearly filters)
 Top products list (based on sales)
 
 Drag-and-drop support for reordering widgets/cards (persisted in DB)
+
 
 🔹 Product Management
 
@@ -78,7 +83,9 @@ Pagination & search handled in backend
 
 Click on product row → modal to order product (quantity change)
 
+
 🔹 Invoice Management
+
 
 Generate invoices linked to products
 
@@ -90,7 +97,9 @@ Download invoice as PDF
 
 Pagination & search supported
 
+
 🔹 Statistics Module
+
 
 Total revenue, products sold, products in stock
 
@@ -100,13 +109,15 @@ Top products with ranking & ratings
 
 Drag-and-drop functionality applied in horizontal sections
 
+
 🔹 Settings
+
 
 User profile management
 
 
-
 🔹 Authentication & Authorization
+
 
 Secure JWT-based auth (no third-party auth libs)
 
@@ -118,7 +129,10 @@ Passwords stored securely with bcryptjs
 
 Session maintained via JWT tokens
 
+
+
 🔹 Notifications & Feedback
+
 
 Toast notifications for success & error events
 
@@ -141,6 +155,7 @@ The invoiceId is generated automatically — users should not try to override it
 
 
 ⚡ Installation & Setup Instructions
+
 1. Clone the repository
 git clone https://github.com/<your-username>/inventory-dashboard.git
 
