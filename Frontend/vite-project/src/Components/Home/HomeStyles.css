@@ -3,13 +3,16 @@
   font-family: 'Inter', sans-serif;
   background-color: #424457;
   width: 100vw;
+  min-height: 100vh;
 }
 
 #right_part {
   display: flex;
   flex-direction: column;
   flex-grow: 1;
+  min-height: 100vh;
   background-color: #424457;
+   margin-left: 220px; 
 }
 
 #right_part_1 {
@@ -46,31 +49,9 @@
   background: rgba(255, 255, 255, 0.05);
 }
 
+@media(max-width:600px){
+  #right_part{
+    margin-left: 10px;
+  }
+}
 /* Mobile First */
-@media (max-width: 600px) {
-  #right_part_1 {
-    flex-direction: column;
-    gap: 1rem;
-  }
-
-  #right_part1,
-  #right_part2 {
-    width: 100%;
-  }
-}
-
-/* Tablet */
-@media (min-width: 601px) and (max-width: 1024px) {
-  #right_part_1 {
-    flex-direction: row;
-    gap: 1rem;
-  }
-}
-
-/* Desktop */
-@media (min-width: 1025px) {
-  #right_part_1 {
-    flex-direction: row;
-    gap: 2rem;
-  }
-}

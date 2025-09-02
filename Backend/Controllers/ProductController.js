@@ -338,10 +338,25 @@ const getProductSummary = async (req, res) => {
     res.status(500).json({ success: false, message: "Internal Server Error" });
   }
 };
+const deleteProduct = async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const { id } = req.params;
+    const product = await ProductModel.findOneAndDelete({ _id: id, owner: userId });
+    if (!product) {
+      return res.status(404).json({ success: false, message: "Product not found" });
+    }
+    res.json({ success: true, message: "Product deleted successfully" });
+  } catch (err) {
+    console.error("deleteProduct:", err);
+    res.status(500).json({ success: false, message: "Internal Server Error" });
+  }
+};
 
 module.exports = {
   CreateSingleProduct,
   CreateMultipleProducts,
   getProducts,
   getProductSummary,
+  deleteProduct
 };

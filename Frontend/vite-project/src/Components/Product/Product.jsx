@@ -6,6 +6,7 @@ import { useState, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
 import { useEffect } from "react";
+import SmallSidebar from "../SmallSidebar";
 
 const Product = () => {
   const { name } = useParams();
@@ -115,6 +116,7 @@ const Product = () => {
     <div id="productcontainer">
       <Sidebar />
       <div id="productrightpart">
+        <SmallSidebar />
         <div id="producttopdiv">
           <h1
             style={{
@@ -135,6 +137,7 @@ const Product = () => {
               fontWeight: "normal",
               color: "grey",
               textAlign: "left",
+              marginBottom: "10px",
             }}
           >
             Overall Inventory
@@ -147,7 +150,9 @@ const Product = () => {
                 style={{ textAlign: "left" }}
               >
                 <div>
-                  <p>{summary?.categories || 0}</p>
+                  <p style={{ color: "grey", fontWeight: "bold" }}>
+                    {summary?.categories || 0}
+                  </p>
                   <p style={{ color: "grey" }}>Last 7 days</p>
                 </div>
               </div>
@@ -156,11 +161,15 @@ const Product = () => {
               <h3>Total Products</h3>
               <div className="product_details_numbers">
                 <div>
-                  <p>{summary?.totalProducts || 0}</p>
+                  <p style={{ color: "grey", fontWeight: "bold" }}>
+                    {summary?.totalProducts || 0}
+                  </p>
                   <p style={{ color: "grey" }}>Last 7 days</p>
                 </div>
                 <div>
-                  <p>₹{summary?.revenue || 0}</p>
+                  <p style={{ color: "grey", fontWeight: "bold" }}>
+                    ₹{summary?.revenue || 0}
+                  </p>
                   <p style={{ color: "grey" }}>Revenue</p>
                 </div>
               </div>
@@ -171,7 +180,9 @@ const Product = () => {
                 {summary?.topSelling?.length > 0 ? (
                   summary.topSelling.map((p, idx) => (
                     <div key={idx}>
-                      <p>{p.name}</p>
+                      <p style={{ color: "grey", fontWeight: "bold" }}>
+                        {p.name}
+                      </p>
                       <p style={{ color: "grey" }}>
                         Sold: {p.totalQty} | ₹{p.totalSales}
                       </p>
@@ -186,11 +197,15 @@ const Product = () => {
               <h3>Low Stocks</h3>
               <div className="product_details_numbers">
                 <div>
-                  <p>{summary?.totalOrdered || 0}</p>
+                  <p style={{ color: "grey", fontWeight: "bold" }}>
+                    {summary?.totalOrdered || 0}
+                  </p>
                   <p style={{ color: "grey" }}>Last 7 days</p>
                 </div>
                 <div>
-                  <p>{summary?.outOfStock || 0}</p>
+                  <p style={{ color: "grey", fontWeight: "bold" }}>
+                    {summary?.outOfStock || 0}
+                  </p>
                   <p style={{ color: "grey" }}>Not in Stock</p>
                 </div>
               </div>
@@ -208,9 +223,7 @@ const Product = () => {
               alignItems: "center",
             }}
           >
-            <h1
-              style={{ fontSize: "24px", fontWeight: "normal", color: "grey" }}
-            >
+            <h1 style={{ fontSize: "24px", color: "grey", fontWeight: "bold" }}>
               Products
             </h1>
             <button
@@ -252,15 +265,35 @@ const Product = () => {
                   : "-"}
               </div>
               <div
-                className={
+                className={`availability-cell ${
                   p.availability === "In Stock"
                     ? "availability-instock"
                     : p.availability === "Low Stock"
                     ? "availability-lowstock"
                     : "availability-outstock"
-                }
+                }`}
               >
-                {p.availability}
+                <span>{p.availability}</span>
+                <button
+                  className="delete-btn"
+                  onClick={async () => {
+                    try {
+                      const token = JSON.parse(localStorage.getItem("token"));
+                      const headers = { Authorization: `Bearer ${token}` };
+                      await axios.delete(
+                        `http://localhost:8000/product/${p._id}/delete`,
+                        { headers }
+                      );
+                      setProducts((prev) =>
+                        prev.filter((prod) => prod._id !== p._id)
+                      );
+                    } catch (err) {
+                      console.error("Error deleting product:", err);
+                    }
+                  }}
+                >
+                  ✕
+                </button>
               </div>
             </div>
           ))}

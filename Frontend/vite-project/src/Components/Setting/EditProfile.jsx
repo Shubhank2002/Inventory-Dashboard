@@ -7,6 +7,13 @@ import { useRef } from "react";
 
 const EditProfile = () => {
     const formRef = useRef(null);
+    const initial_state={
+    fname: "",
+    lname: "",
+    email: "",
+    password: "",
+    confirm_password: "",
+  }
   const [form, setform] = useState({
     fname: "",
     lname: "",
@@ -17,6 +24,9 @@ const EditProfile = () => {
   const [Errmsg, setErrmsg] = useState("");
   const [loading, setloading] = useState(false);
   const [bool, setbool] = useState(false)
+
+ 
+  
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -45,11 +55,13 @@ const EditProfile = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setErrmsg('')
     setloading(true);
     setbool(false)
     if (!form.fname.trim() || !form.email.trim()) {
         setloading(false)
       setErrmsg("Name or Email field cannot be empty");
+      setform(initial_state)
       return;
      
     }
@@ -57,16 +69,19 @@ const EditProfile = () => {
     if(!emailRegex.test(form.email)){
          setErrmsg('Please enter a valid email')
          setloading(false)
+          setform(initial_state)
          return;
     }
     if (form.confirm_password !== form.password) {
        setErrmsg("Password and Confirm Password are not matching");
        setloading(false)
+        setform(initial_state)
        return;
     }
     if (form.password.length < 8) {
        setErrmsg("Password should have at least 8 digits");
        setloading(false)
+        setform(initial_state)
        return;
     }
     try {

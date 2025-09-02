@@ -3,13 +3,16 @@ import "../Styles/LoginStyles.css";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { Data } from "../Context/UserContext";
+import { useRef } from "react";
 
 const Login = () => {
+  const formRef = useRef(null);
   const [Form, setForm] = useState({ password: "", email: "" });
   const { UserName, setUserName } = useContext(Data);
   const [Errmsg, setErrmsg] = useState("");
   const [loading, setloading] = useState(false);
   const navigate = useNavigate();
+  const initial_state = { password: "", email: "" };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -18,11 +21,32 @@ const Login = () => {
       [name]: value,
     });
   };
+
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault(); // stop default submit on Enter
+
+      const form = formRef.current;
+      const inputs = Array.from(form.querySelectorAll("input"));
+      const index = inputs.indexOf(e.target);
+
+      if (index < inputs.length - 1) {
+        // 🔹 Focus next input
+        inputs[index + 1].focus();
+      } else {
+        // 🔹 Last input → submit form
+        form.requestSubmit(); // modern way to submit
+      }
+    }
+  };
   const handleSignin = async (e) => {
     e.preventDefault();
     setErrmsg("");
-    if (!Form.email.trim() || !Form.password.trim()) {
-      return setErrmsg("Email or Password fields cannot be leaved empty");
+    if (!Form.email.trim() || !Form.password) {
+      setErrmsg("Email or Password fields cannot be leaved empty");
+      setloading(false);
+      setForm(initial_state)
+      return;
     }
     setloading(true);
     try {
@@ -36,7 +60,7 @@ const Login = () => {
       );
       if (data?.success) {
         setUserName(data.name);
-        localStorage.setItem('token',JSON.stringify(data.token))
+        localStorage.setItem("token", JSON.stringify(data.token));
         navigate("/dashboard/home");
       } else {
         setErrmsg("Sign in failed");
@@ -57,7 +81,7 @@ const Login = () => {
       <div id="login_details">
         <h1 id="login_heading">Log in to your account</h1>
         <h3 id="subheading">Welcome back! Please enter your details</h3>
-        <form action="" id="loginform" onSubmit={handleSignin}>
+        <form action="" id="loginform" onSubmit={handleSignin} ref={formRef}>
           <div className="logindiv">
             <label htmlFor="" className="loginlabel">
               Email
@@ -65,6 +89,7 @@ const Login = () => {
             <input
               type="email"
               name="email"
+              onKeyDown={handleKeyDown}
               value={Form.email}
               onChange={handleChange}
               placeholder="Example@gmail.com"
@@ -80,6 +105,7 @@ const Login = () => {
               name="password"
               value={Form.password}
               onChange={handleChange}
+              onKeyDown={handleKeyDown}
               placeholder="at least 8 characters"
               className="login_input"
             />

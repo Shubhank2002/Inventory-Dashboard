@@ -29,3 +29,9 @@
 #Email_validation_input::placeholder{
     color: #9A9A9A;
 }
+
+@media(max-width:600px){
+    #email_validation_image{
+        display: none;
+    }
+}

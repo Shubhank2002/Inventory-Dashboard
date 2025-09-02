@@ -1,4 +1,6 @@
 require('dotenv').config()
+require("./cron");
+
 const express=require('express')
 const app=express()
 const cors=require('cors')

@@ -1,7 +1,7 @@
 #invoicecontainer {
   display: flex;
-  width: 100vw;
-  height: 100vh;
+  min-width: 100vw;
+  min-height: 100vh;
 }
 
 #invoicerightpart {
@@ -10,9 +10,17 @@
   font-family: "Poppins", sans-serif;
   background-color: #424457;
   flex-grow: 1;
+  min-height: 100vh;
   gap: 15px;
   padding-bottom: 15px;
   overflow-y: auto;
+  margin-left: 220px;
+}
+@media(max-width:600px){
+  #invoicerightpart{
+    margin-left: 0px;
+    align-items: center;
+  }
 }
 
 /* Top bar */
@@ -28,7 +36,7 @@
 #invoiceseconddiv {
   display: flex;
   flex-direction: column;
-  gap: 15px;
+  
   background-color: #ffffff;
   padding: 20px;
   border-radius: 12px;
@@ -55,7 +63,11 @@
   display: flex;
   flex-direction: column;
   border-right: 1px solid #e0e0e0;
-  padding: 10px 15px;
+  padding: 0px 15px;
+}
+
+.invoice_details_div h3,.invoice_details_numbers p{
+  margin: 8px 0px;
 }
 
 .invoice_details_div:last-child {
@@ -68,7 +80,10 @@
   font-weight: 500;
   margin-bottom: 8px;
 }
-
+.grid_div_invoice_content:hover{
+  background-color: #E1E3F3;
+  cursor: pointer;
+}
 .draggable-menu-item {
   cursor: grab;
 }
@@ -122,18 +137,7 @@
   color: #555;
   background-color: #B6B9CF;
 }
-.overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background: rgba(0,0,0,0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 999;
-}
+
 
 /* ============================= */
 /* Dialog (popup box)            */
@@ -151,6 +155,114 @@
   font-size: 20px;
   font-weight: 500;
 }
+
+.overlay {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100vw; height: 100vh;
+  background: rgba(0,0,0,0.5);
+  display: flex; justify-content: center; align-items: center;
+  z-index: 999;
+}
+
+.invoice-dialog {
+  background: #fff;
+  width: 850px;
+  max-height: 95vh;
+  overflow-y: auto;
+  padding: 0;
+  border-radius: 8px;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.25);
+  font-family: "Segoe UI", sans-serif;
+}
+
+.invoice-document {
+  padding: 40px;
+  border: 2px solid #0a66c2; /* blue border */
+}
+
+.invoice-header h1 {
+  margin: 0 0 20px 0;
+  font-size: 28px;
+  font-weight: bold;
+}
+
+.invoice-addresses {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 30px;
+  font-size: 14px;
+  color: #444;
+}
+
+.invoice-meta {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  margin-bottom: 20px;
+  gap: 10px;
+  font-size: 14px;
+}
+
+.invoice-meta p {
+  margin: 0;
+}
+
+.invoice-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 20px 0;
+}
+
+.invoice-table th,
+.invoice-table td {
+  padding: 10px 12px;
+  border: 1px solid #ddd;
+  font-size: 14px;
+  text-align: left;
+}
+
+.invoice-table th {
+  background: #f9f9f9;
+  font-weight: 600;
+}
+
+.invoice-summary {
+  margin-top: 20px;
+  text-align: right;
+  font-size: 14px;
+}
+
+.invoice-summary p {
+  margin: 6px 0;
+}
+
+.invoice-summary span {
+  margin-left: 40px;
+  font-weight: bold;
+}
+
+.invoice-summary .total-due {
+  font-size: 16px;
+  color: #0a66c2;
+  font-weight: 600;
+}
+
+.invoice-notes {
+  margin-top: 20px;
+  font-size: 13px;
+  color: #555;
+}
+
+.invoice-footer {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 40px;
+  padding-top: 15px;
+  border-top: 1px solid #ddd;
+  font-size: 13px;
+  color: #444;
+}
+
 
 .dialog button {
   border: none;
@@ -171,10 +283,9 @@
   color: #fff;
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(-10px); }
-  to { opacity: 1; transform: translateY(0); }
-}
+
+
+
 
 /* ============================= */
 /* Three dots button + menu      */

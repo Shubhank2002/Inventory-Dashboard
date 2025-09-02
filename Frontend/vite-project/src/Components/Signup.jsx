@@ -2,64 +2,100 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import "../Styles/SignupStyles.css";
 import axios from "axios";
+import { useRef } from "react";
 
 const Signup = () => {
+  const formRef = useRef(null);
   const [Form, setForm] = useState({
     name: "",
     email: "",
     password: "",
     confirm_password: "",
   });
+  const initial_state = {
+    name: "",
+    email: "",
+    password: "",
+    confirm_password: "",
+  };
   const [Errmsg, setErrmsg] = useState("");
-  const [loading, setloading] = useState(false)
-  const navigate=useNavigate()
+  const [loading, setloading] = useState(false);
+  const navigate = useNavigate();
 
-  const handleChange=(e)=>{
-    const {name,value}=e.target
-    setForm((prev)=>({
-      ...prev,[name]:value
-    }))
-  }
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setForm((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault(); // stop default submit on Enter
 
+      const form = formRef.current;
+      const inputs = Array.from(form.querySelectorAll("input"));
+      const index = inputs.indexOf(e.target);
+
+      if (index < inputs.length - 1) {
+        // 🔹 Focus next input
+        inputs[index + 1].focus();
+      } else {
+        // 🔹 Last input → submit form
+        form.requestSubmit(); // modern way to submit
+      }
+    }
+  };
   const handleSignup = async (e) => {
     e.preventDefault();
-    if(loading){ return;}
-    setErrmsg('')
-      if(Form.confirm_password!==Form.password){
-        return setErrmsg('Password should match with confirm password')
+    setloading(true);
+    setErrmsg("");
+    if (Form.confirm_password !== Form.password) {
+      setErrmsg("Password should match with confirm password");
+      setloading(false);
+      setForm(initial_state);
+      return;
+    }
+    if (Form.password.length < 8) {
+      setErrmsg("Password Should contain at least 8 characters");
+      setloading(false);
+      setForm(initial_state);
+      return;
+    }
+    if (!Form.name.trim() || !Form.password.trim() || !Form.email.trim()) {
+      setErrmsg("Name or Email or Passwords fields cannot be leaved empty");
+      setloading(false);
+      setForm(initial_state);
+      return;
+    }
+
+    try {
+      const payload = {
+        name: Form.name.trim(),
+        password: Form.password,
+        email: Form.email.trim().toLowerCase(),
+      };
+      const { data } = await axios.post(
+        "http://localhost:8000/auth/signup",
+        payload
+      );
+      if (data?.success) {
+        navigate("/");
+      } else {
+        setErrmsg("signup failed");
       }
-      if(Form.password.length<8){
-        return setErrmsg('Password Should contain at least 8 characters')
-      }
-      if(!Form.name.trim() || !Form.password.trim() || !Form.email.trim()){
-        return setErrmsg('Name or Email or Passwords fields cannot be leaved empty')
-      }
-      setloading(true)
-      try {
-        const payload={name:Form.name.trim(),password:Form.password,email:Form.email.trim().toLowerCase()}
-        const { data } = await axios.post(
-          "http://localhost:8000/auth/signup",
-          payload
-        );
-        if(data?.success){
-          navigate('/')
-        }else{
-          setErrmsg('signup failed')
-        }
-      } catch (error) {
-        setErrmsg(error?.message || 'something went wrong..' )
-        
-      }finally{
-        setloading(false)
-      }
-    
+    } catch (error) {
+      setErrmsg(error?.message || "something went wrong..");
+    } finally {
+      setloading(false);
+    }
   };
   return (
     <div id="signup_container">
       <div id="signup_details">
         <h1 id="signup_heading">Create an account</h1>
         <h3 id="signup_subheading">Start inventory management</h3>
-        <form action="" id="signupform" onSubmit={handleSignup}>
+        <form action="" id="signupform" onSubmit={handleSignup} ref={formRef}>
           <div className="signupdiv">
             <label htmlFor="" className="signuplabel">
               Name
@@ -71,6 +107,7 @@ const Signup = () => {
               placeholder="Name"
               className="signup_input"
               onChange={handleChange}
+              onKeyDown={handleKeyDown}
             />
           </div>
           <div className="signupdiv">
@@ -84,6 +121,7 @@ const Signup = () => {
               placeholder="Example@gmail.com"
               className="signup_input"
               onChange={handleChange}
+              onKeyDown={handleKeyDown}
             />
           </div>
           <div className="signupdiv">
@@ -97,6 +135,7 @@ const Signup = () => {
               placeholder="at least 8 characters"
               className="signup_input"
               onChange={handleChange}
+              onKeyDown={handleKeyDown}
             />
           </div>
           <div className="signupdiv">
@@ -110,15 +149,17 @@ const Signup = () => {
               placeholder="at least 8 characters"
               className="signup_input"
               onChange={handleChange}
-              
+              onKeyDown={handleKeyDown}
             />
           </div>
           {Errmsg && (
-            <div style={{ color: "crimson", marginTop: 8, fontSize: 14 }}>{Errmsg}</div>
+            <div style={{ color: "crimson", marginTop: 8, fontSize: 14 }}>
+              {Errmsg}
+            </div>
           )}
 
           <button id="signup_button" type="submit" disabled={loading}>
-            {loading?'Signing up...':'Sign up'}
+            {loading ? "Signing up..." : "Sign up"}
           </button>
         </form>
         <div style={{ marginTop: "20px" }}>

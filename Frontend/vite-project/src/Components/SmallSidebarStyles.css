@@ -1,0 +1,25 @@
+#SmallSidebarContainer{
+    display: flex;
+    background-color: #242531;
+    color: white;
+    border: 1px solid #242531;
+    border-radius: 20px;
+    justify-content: space-evenly;
+    width: 380px;
+    margin: auto;
+    align-items: center;
+    position: fixed;
+    z-index: 999;
+    bottom: 0%;
+    font-size: 8px;
+    height: 75px;
+}
+#headersmallsidebar{
+    cursor: pointer;
+}
+
+@media(min-width:600px){
+    #SmallSidebarContainer{
+        display: none !important;
+    }
+}

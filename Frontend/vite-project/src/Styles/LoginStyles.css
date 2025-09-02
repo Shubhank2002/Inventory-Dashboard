@@ -58,6 +58,11 @@
     padding: 8px;
     cursor: pointer;
 }
+@media(max-width:600px){
+    #Login_image{
+        display: none !important;
+    }
+}
 #login_button:hover{
     transform: scale(1.1);
     transition: all;

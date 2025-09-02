@@ -3,11 +3,12 @@ import "./InvoiceStyles.css";
 import Sidebar from "../Sidebar";
 import Searchere from "../Searchere";
 import axios from "axios";
+import SmallSidebar from "../SmallSidebar";
 
 const Invoice = () => {
   const [openInvoice, setopenInvoice] = useState(false);
   const [draggingItem, setDraggingItem] = useState(null);
-
+  const [processed, setprocessed] = useState(0);
   const [summary, setSummary] = useState(null);
   const [invoices, setInvoices] = useState([]);
   const [page, setPage] = useState(1);
@@ -96,6 +97,7 @@ const Invoice = () => {
   useEffect(() => {
     const handleClickOutside = () => setMenuOpenId(null);
     document.addEventListener("click", handleClickOutside);
+    setprocessed(0);
     return () => document.removeEventListener("click", handleClickOutside);
   }, []);
 
@@ -110,6 +112,7 @@ const Invoice = () => {
       setSelectedInvoice(data.data);
       setOpenInvoiceView(true);
       setMenuOpenId(null);
+      setprocessed((prev) => prev + 1);
     } catch (err) {
       console.error("Error fetching invoice:", err);
     }
@@ -217,6 +220,7 @@ const Invoice = () => {
     <div id="invoicecontainer">
       <Sidebar />
       <div id="invoicerightpart">
+        <SmallSidebar />
         {/* Header */}
         <div id="invoicetopdiv">
           <h1
@@ -229,10 +233,16 @@ const Invoice = () => {
 
         {/* SUMMARY */}
         <div id="invoiceseconddiv">
-          <h1>Overall Invoice</h1>
+          <h1 style={{ textAlign: "left", marginBottom: "8px" }}>
+            Overall Invoice
+          </h1>
           <div id="invoice_details">
             <div className="invoice_details_div">
-              <h3>Recent Transactions</h3>
+              <h3
+                style={{ color: "black", fontWeight: "bold", fontSize: "16px" }}
+              >
+                Recent Transactions
+              </h3>
               <div className="invoice_details_numbers">
                 <div>
                   <p>{summary?.recentTransactions || 0}</p>
@@ -241,20 +251,28 @@ const Invoice = () => {
               </div>
             </div>
             <div className="invoice_details_div">
-              <h3>Total Invoices</h3>
+              <h3
+                style={{ color: "black", fontWeight: "bold", fontSize: "16px" }}
+              >
+                Total Invoices
+              </h3>
               <div className="invoice_details_numbers">
                 <div>
                   <p>{summary?.totalInvoices || 0}</p>
                   <p>Last 7 days</p>
                 </div>
                 <div>
-                  <p>{summary?.totalInvoices || 0}</p>
+                  <p>{processed || 0}</p>
                   <p>Processed</p>
                 </div>
               </div>
             </div>
             <div className="invoice_details_div">
-              <h3>Paid Amount</h3>
+              <h3
+                style={{ color: "black", fontWeight: "bold", fontSize: "16px" }}
+              >
+                Paid Amount
+              </h3>
               <div className="invoice_details_numbers">
                 <div>
                   <p>₹{summary?.paidAmount || 0}</p>
@@ -267,7 +285,11 @@ const Invoice = () => {
               </div>
             </div>
             <div className="invoice_details_div">
-              <h3>Unpaid Amount</h3>
+              <h3
+                style={{ color: "black", fontWeight: "bold", fontSize: "16px" }}
+              >
+                Unpaid Amount
+              </h3>
               <div className="invoice_details_numbers">
                 <div>
                   <p>₹{summary?.unpaidAmount || 0}</p>
@@ -469,58 +491,107 @@ const Invoice = () => {
       {/* VIEW INVOICE POPUP */}
       {openInvoiceView && selectedInvoice && (
         <div className="overlay" onClick={() => setOpenInvoiceView(false)}>
-          <div
-            className="dialog"
-            style={{ width: "700px" }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <h2 style={{ textAlign: "center" }}>INVOICE</h2>
-            <div>
-              <strong>Invoice #:</strong> {selectedInvoice.invoiceId} <br />
-              <strong>Reference:</strong>{" "}
-              {selectedInvoice.referenceNumber || "-"} <br />
-              <strong>Invoice Date:</strong>{" "}
-              {new Date(selectedInvoice.createdAt).toLocaleDateString()} <br />
-              <strong>Due Date:</strong>{" "}
-              {new Date(selectedInvoice.dueDate).toLocaleDateString()}
-            </div>
+          <div className="invoice-dialog" onClick={(e) => e.stopPropagation()}>
+            <div className="invoice-document">
+              {/* Header */}
+              <div className="invoice-header">
+                <h1>INVOICE</h1>
+                <div className="invoice-addresses">
+                  <div>
+                    <p>
+                      <strong>Billed to</strong>
+                    </p>
+                    <p>Company Name</p>
+                    <p>Company address</p>
+                    <p>City, Country - 00000</p>
+                  </div>
+                  <div style={{ textAlign: "right" }}>
+                    <p>
+                      <strong>Business address</strong>
+                    </p>
+                    <p>City, State, IN - 000 000</p>
+                    <p>TAX ID 00XXX1234XXX</p>
+                  </div>
+                </div>
+              </div>
 
-            <table>
-              <thead>
-                <tr>
-                  <th>Products</th>
-                  <th>Qty</th>
-                  <th>Price</th>
-                  <th>Total</th>
-                </tr>
-              </thead>
-              <tbody>
-                {selectedInvoice.items.map((item, idx) => (
-                  <tr key={idx}>
-                    <td>{item.name}</td>
-                    <td>{item.quantity}</td>
-                    <td>₹{item.price}</td>
-                    <td>₹{item.total}</td>
+              {/* Meta info */}
+              <div className="invoice-meta">
+                <p>
+                  <strong>Invoice #</strong>
+                  <br />
+                  {selectedInvoice.invoiceId}
+                </p>
+                <p>
+                  <strong>Invoice date</strong>
+                  <br />
+                  {new Date(selectedInvoice.createdAt).toLocaleDateString()}
+                </p>
+                <p>
+                  <strong>Reference</strong>
+                  <br />
+                  {selectedInvoice.referenceNumber || "-"}
+                </p>
+                <p>
+                  <strong>Due date</strong>
+                  <br />
+                  {new Date(selectedInvoice.dueDate).toLocaleDateString()}
+                </p>
+              </div>
+
+              {/* Items Table */}
+              <table className="invoice-table">
+                <thead>
+                  <tr>
+                    <th>Products</th>
+                    <th>Qty</th>
+                    <th>Price</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {selectedInvoice.items.map((item, idx) => (
+                    <tr key={idx}>
+                      <td>{item.name}</td>
+                      <td>{item.quantity}</td>
+                      <td>₹{item.total.toLocaleString()}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
 
-            <div style={{ textAlign: "right", fontWeight: "bold" }}>
-              Total Due: ₹{selectedInvoice.totalAmount}
-            </div>
+              {/* Summary */}
+              <div className="invoice-summary">
+                <div>
+                  <p>
+                    Subtotal{" "}
+                    <span>₹{selectedInvoice.totalAmount.toLocaleString()}</span>
+                  </p>
+                  <p>
+                    Tax (10%){" "}
+                    <span>
+                      ₹{(selectedInvoice.totalAmount * 0.1).toLocaleString()}
+                    </span>
+                  </p>
+                  <p className="total-due">
+                    Total due{" "}
+                    <span>
+                      ₹{(selectedInvoice.totalAmount * 1.1).toLocaleString()}
+                    </span>
+                  </p>
+                </div>
+              </div>
 
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "flex-end",
-                gap: "10px",
-                marginTop: "20px",
-              }}
-            >
-              <button onClick={() => setOpenInvoiceView(false)}>Close</button>
-              <button>Download</button>
-              <button>Print</button>
+              {/* Notes */}
+              <div className="invoice-notes">
+                <p>☑ Please pay within 15 days of receiving this invoice.</p>
+              </div>
+
+              {/* Footer */}
+              <div className="invoice-footer">
+                <p>www.receethol.inc</p>
+                <p>+91 00000 00000</p>
+                <p>hello@email.com</p>
+              </div>
             </div>
           </div>
         </div>

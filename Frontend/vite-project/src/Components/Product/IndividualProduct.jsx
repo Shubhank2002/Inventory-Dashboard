@@ -7,6 +7,7 @@ import axios from "axios";
 
 
 const IndividualProduct = () => {
+  const formRef = useRef(null);
   const navigate = useNavigate();
   const [form, setForm] = useState({
     name: "",
@@ -28,7 +29,7 @@ const IndividualProduct = () => {
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
-  
+
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
@@ -54,6 +55,23 @@ const IndividualProduct = () => {
     setImagePreview("");
   };
   const browse = () => document.getElementById("ip-file").click();
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault(); // stop default submit on Enter
+
+      const form = formRef.current;
+      const inputs = Array.from(form.querySelectorAll("input"));
+      const index = inputs.indexOf(e.target);
+
+      if (index < inputs.length - 1) {
+        // 🔹 Focus next input
+        inputs[index + 1].focus();
+      } else {
+        // 🔹 Last input → submit form
+        form.requestSubmit(); // modern way to submit
+      }
+    }
+  };
   const handleSubmit = async(e) => {
     e.preventDefault();
     const newForm=new FormData()
@@ -121,7 +139,7 @@ const IndividualProduct = () => {
               New Product
             </h2>
 
-            <form className="iform" onSubmit={handleSubmit}>
+            <form className="iform" onSubmit={handleSubmit} ref={formRef}>
               {/* Image uploader */}
               {/* === Row 1: Image box (left) + hint text (right) === */}
               <div className="iupload-row">
@@ -158,6 +176,7 @@ const IndividualProduct = () => {
                     className="ifield-input"
                     value={form.name}
                     onChange={onInputChange}
+                    onKeyDown={handleKeyDown}
                     placeholder="Enter product name"
                     required
                   />
@@ -170,6 +189,7 @@ const IndividualProduct = () => {
                     className="ifield-input"
                     value={form.productId}
                     onChange={onInputChange}
+                    onKeyDown={handleKeyDown}
                     placeholder="Enter product ID"
                     required
                   />
@@ -182,6 +202,7 @@ const IndividualProduct = () => {
                     className="ifield-input"
                     value={form.category}
                     onChange={onInputChange}
+                    onKeyDown={handleKeyDown}
                     placeholder="Enter product Category"
                     required
                   />
@@ -195,6 +216,7 @@ const IndividualProduct = () => {
                     className="ifield-input"
                     value={form.costPrice}
                     onChange={onInputChange}
+                    onKeyDown={handleKeyDown}
                     placeholder="Enter price"
                     required
                   />
@@ -207,6 +229,7 @@ const IndividualProduct = () => {
                     className="ifield-input"
                     value={form.price}
                     onChange={onInputChange}
+                    onKeyDown={handleKeyDown}
                     placeholder="Enter price"
                     required
                   />
@@ -220,6 +243,7 @@ const IndividualProduct = () => {
                     className="ifield-input"
                     value={form.quantity}
                     onChange={onInputChange}
+                    onKeyDown={handleKeyDown}
                     placeholder="Enter product quantity"
                   />
                 </label>
@@ -231,6 +255,7 @@ const IndividualProduct = () => {
                     value={form.unit}
                     className="ifield-input"
                     onChange={onInputChange}
+                    onKeyDown={handleKeyDown}
                     placeholder="Enter product unit"
                   />
                 </label>
@@ -243,6 +268,7 @@ const IndividualProduct = () => {
                     value={form.expiry}
                     className="ifield-input"
                     onChange={onInputChange}
+                    onKeyDown={handleKeyDown}
                   />
                 </label>
 
@@ -254,6 +280,7 @@ const IndividualProduct = () => {
                     value={form.threshold}
                     className="ifield-input"
                     onChange={onInputChange}
+                    onKeyDown={handleKeyDown}
                     placeholder="Enter threshold value"
                   />
                 </label>

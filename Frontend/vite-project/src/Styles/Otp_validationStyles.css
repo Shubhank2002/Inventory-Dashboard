@@ -35,3 +35,8 @@
     color: #9A9A9A;
     
 }
+@media(max-width:600px){
+    #otp_image{
+        display: none;
+    }
+}

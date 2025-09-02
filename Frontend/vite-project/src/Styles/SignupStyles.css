@@ -77,3 +77,9 @@
     align-items: center;
     gap: 180px;
 }
+
+@media(max-width:600px){
+    #signup_image{
+        display: none !important;
+    }
+}

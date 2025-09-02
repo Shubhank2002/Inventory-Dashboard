@@ -1,5 +1,8 @@
 #Sidebar_container{
     width: 220px;
+    position: fixed;
+    top: 0;
+    left: 0;
     background-color: #242531;
     height: 100vh;
     display: flex;
@@ -59,44 +62,10 @@
     background-color: white;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 600px) {
   #Sidebar_container {
-    flex-direction: row;
-    justify-content: space-around;
-    align-items: center;
-    width: 100vw;
-    height: 60px;
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    top: unset;
-    z-index: 1000;
-    padding: 0 10px;
+   display: none !important;
   }
 
-  #sidebar_image,
-  .bottomsidebarcontainer {
-    display: none; /* hide logo + user info */
-  }
-
-  #sidebar_toogle_container {
-    flex-direction: row;
-    margin: 0;
-    width: 100%;
-    justify-content: space-around;
-    gap: 0;
-  }
-
-  .toogle_container,
-  .selectedtoogle_container {
-    flex-direction: column;
-    font-size: 12px;
-    padding: 4px;
-    border-radius: 10px;
-  }
-
-  .toogle_container div:last-child,
-  .selectedtoogle_container div:last-child {
-    display: none; /* hide text labels, keep only icons */
-  }
+ 
 }

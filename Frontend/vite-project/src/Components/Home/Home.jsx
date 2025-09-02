@@ -9,6 +9,7 @@ import Searchere from "../Searchere";
 import axios from "axios";
 import SalesPurchaseChart from "../SalesPurchaseChart";
 import TopProducts from "../TopProducts";
+import SmallSidebar from "../SmallSidebar";
 
 const Home = () => {
   const [summary, setSummary] = useState(null);
@@ -27,19 +28,38 @@ const Home = () => {
         const token = JSON.parse(jsontoken);
         const headers = { Authorization: `Bearer ${token}` };
 
-        const { data } = await axios.get("http://localhost:8000/dashboard/summary", { headers });
+        const { data } = await axios.get(
+          "http://localhost:8000/dashboard/summary",
+          { headers }
+        );
         setSummary(data);
 
         // initialize draggable items after data fetch
         setRightPart1Items([
-          { id: 1, component: <SalesOverview salesOverview={data?.salesOverview} /> },
-          { id: 2, component: <PurchaseOverview purchaseOverview={data?.purchaseOverview} /> },
+          {
+            id: 1,
+            component: <SalesOverview salesOverview={data?.salesOverview} />,
+          },
+          {
+            id: 2,
+            component: (
+              <PurchaseOverview purchaseOverview={data?.purchaseOverview} />
+            ),
+          },
           { id: 3, component: <SalesPurchaseChart /> },
         ]);
 
         setRightPart2Items([
-          { id: 4, component: <InventorySummary inventorySummary={data?.inventorySummary} /> },
-          { id: 5, component: <ProductSummary productSummary={data?.productSummary} /> },
+          {
+            id: 4,
+            component: (
+              <InventorySummary inventorySummary={data?.inventorySummary} />
+            ),
+          },
+          {
+            id: 5,
+            component: <ProductSummary productSummary={data?.productSummary} />,
+          },
           { id: 6, component: <TopProducts /> },
         ]);
       } catch (err) {
@@ -75,7 +95,13 @@ const Home = () => {
       <Sidebar />
       <div id="right_part">
         <div id="right_first_div">
-          <h1 style={{ fontSize: "1.25rem", color: "white", margin: "0.625rem 0" }}>
+          <h1
+            style={{
+              fontSize: "1.25rem",
+              color: "white",
+              margin: "0.625rem 0",
+            }}
+          >
             Home
           </h1>
           <Searchere />
@@ -91,7 +117,9 @@ const Home = () => {
                 draggable
                 onDragStart={() => handleDragStart(index)}
                 onDragOver={(e) => e.preventDefault()}
-                onDrop={() => handleDrop(index, rightPart1Items, setRightPart1Items)}
+                onDrop={() =>
+                  handleDrop(index, rightPart1Items, setRightPart1Items)
+                }
               >
                 {item.component}
               </div>
@@ -107,12 +135,15 @@ const Home = () => {
                 draggable
                 onDragStart={() => handleDragStart(index)}
                 onDragOver={(e) => e.preventDefault()}
-                onDrop={() => handleDrop(index, rightPart2Items, setRightPart2Items)}
+                onDrop={() =>
+                  handleDrop(index, rightPart2Items, setRightPart2Items)
+                }
               >
                 {item.component}
               </div>
             ))}
           </div>
+          <SmallSidebar />
         </div>
       </div>
     </div>

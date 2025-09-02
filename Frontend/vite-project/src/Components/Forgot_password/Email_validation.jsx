@@ -2,13 +2,32 @@ import React, { useState } from "react";
 import "../../Styles/Email_validationStyles.css";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { useRef } from "react";
 
 const Email_validation = () => {
+  const formRef=useRef(null)
   const navigate=useNavigate()
   const [input, setinput] = useState("")
   const [errMsg, seterrMsg] = useState("")
   const [loading, setloading] = useState(false)
 
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault(); // stop default submit on Enter
+
+      const form = formRef.current;
+      const inputs = Array.from(form.querySelectorAll("input"));
+      const index = inputs.indexOf(e.target);
+
+      if (index < inputs.length - 1) {
+        // 🔹 Focus next input
+        inputs[index + 1].focus();
+      } else {
+        // 🔹 Last input → submit form
+        form.requestSubmit(); // modern way to submit
+      }
+    }
+  };
   const handleClick=async(e)=>{
     e.preventDefault()
     seterrMsg('')
@@ -49,7 +68,7 @@ const Email_validation = () => {
             receive an OTP
           </h3>
         </div>
-        <form action="" id="Email_validation_form" onSubmit={handleClick}>
+        <form action="" id="Email_validation_form" onSubmit={handleClick} ref={formRef}>
           <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
             <label htmlFor="" style={{ textAlign: "left" }}>
               E-mail
@@ -58,6 +77,7 @@ const Email_validation = () => {
               type="email"
               id="Email_validation_input"
               value={input}
+              onKeyDown={handleKeyDown}
               onChange={(e)=>setinput(e.target.value)}
               placeholder="Enter your registered email"
               style={{
