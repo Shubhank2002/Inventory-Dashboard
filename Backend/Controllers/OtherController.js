@@ -84,20 +84,21 @@ const getTopProducts = async (req, res) => {
           _id: "$items.product",
           name: { $first: "$items.name" },
           totalQty: { $sum: "$items.quantity" },
+          // ✅ multiply quantity × selling price
           totalRevenue: { $sum: { $multiply: ["$items.quantity", "$items.price"] } },
         },
       },
-      { $sort: { totalRevenue: -1 } },
-      { $limit: 5 }, // only top 5 products
+      { $sort: { totalRevenue: -1 } }, // ✅ sort by revenue, not quantity
+      { $limit: 5 },
     ]);
 
-    // ✅ Now send data to frontend
     res.json({ success: true, topProducts });
   } catch (err) {
     console.error("getTopProducts:", err);
     res.status(500).json({ success: false, message: "Internal Server Error" });
   }
 };
+
 
 
 const getRevenueAndStock = async (req, res) => {

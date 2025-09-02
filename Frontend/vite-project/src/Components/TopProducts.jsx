@@ -30,14 +30,14 @@ const TopProducts = () => {
 
   return (
     <div style={{ background: "#fff", padding: "20px", borderRadius: "12px" }}>
-      <h3 style={{ marginBottom: "15px" }}>Top Products</h3>
+      <h3 style={{ marginBottom: "20px" }}>Top Products</h3>
       {products.slice(0, 5).map((p, idx) => {
         const stars = Math.max(5 - idx, 1); // 1st=5, 2nd=4 … 5th=1
 
         return (
-          <div key={idx} style={{ marginBottom: "12px" }}>
-            <p style={{ margin: "0 0 8px 0" }}>
-              {p.name} - ₹{p.totalRevenue}
+          <div key={idx} style={{ gap:'16px',display:'flex',flexDirection:'column',alignItems:'center' }}>
+            <p style={{ margin: "0 0 8px 0" ,alignSelf:'flex-start'}}>
+              {p.name} 
             </p>
             <div style={{ display: "flex", gap: "4px" }}>
               {Array.from({ length: stars }).map((_, i) => (
