@@ -3,6 +3,8 @@ import "../../Styles/create_passwordStyles.css";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import axios from "axios";
+import { toast } from "react-toastify";
+
 
 const Create_New_password = () => {
   const navigate = useNavigate();
@@ -36,6 +38,7 @@ const Create_New_password = () => {
         { password: Form.password, resettoken }
       );
       if (data.success && status === 200) {
+        toast.success('Password Changed',{position:'top-center'})
         navigate("/",{replace:true});
       }
     } catch (error) {

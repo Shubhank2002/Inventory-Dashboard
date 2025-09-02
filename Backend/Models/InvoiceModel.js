@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const { v4: uuidv4 } = require("uuid");
 
 const InvoiceSchema = new mongoose.Schema({
   invoiceId: { type: String,}, // ex: INV-1001

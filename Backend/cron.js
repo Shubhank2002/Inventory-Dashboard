@@ -8,14 +8,14 @@ cron.schedule("0 0 * * *", async () => {
     const now = new Date();
 
     // Find expired products
-    const expiredProducts = await Product.find({
+    const expiredProducts = await ProductModel.find({
       expiryDate: { $lt: now }
     });
 
     if (expiredProducts.length > 0) {
       const expiredIds = expiredProducts.map(p => p._id);
 
-      await Product.deleteMany({ _id: { $in: expiredIds } });
+      await ProductModel.deleteMany({ _id: { $in: expiredIds } });
 
       console.log(`🗑️ Deleted ${expiredIds.length} expired products`);
     }

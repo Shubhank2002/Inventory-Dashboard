@@ -4,6 +4,8 @@ import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { Data } from "../Context/UserContext";
 import { useRef } from "react";
+import { toast } from "react-toastify";
+
 
 const Login = () => {
   const formRef = useRef(null);
@@ -61,16 +63,20 @@ const Login = () => {
       if (data?.success) {
         setUserName(data.name);
         localStorage.setItem("token", JSON.stringify(data.token));
+        toast.success("Login successful! 🎉",{position:'top-center'});
         navigate("/dashboard/home");
       } else {
         setErrmsg("Sign in failed");
+         toast.error(data.message+' ❌' || "Login failed ❌",{position:'top-center'});
       }
     } catch (error) {
       console.log(error?.response?.data?.message);
       if (error?.response?.status === 401) {
-        return setErrmsg(error.response.data.message || "Invalid Credentials");
+        toast.error(error.response.data.message+' ❌' || "Invalid Credentials ❌",{position:'top-center'});
+        return setErrmsg(error.response.data.message || "Invalid Credentials ",);
       }
       setErrmsg(error?.response?.data?.message || "Something went wrong...");
+       
     } finally {
       setloading(false);
     }

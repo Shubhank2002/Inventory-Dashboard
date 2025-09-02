@@ -31,6 +31,21 @@
   border-bottom: 2px solid #9f9f9f;
   padding: 4px 45px;
 }
+.download-btn {
+  margin: 20px auto;
+  background: #242531;
+  color: white;
+  padding: 10px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  display: block;
+  border: none;
+}
+
+.download-btn:hover {
+  background: #343549;
+}
+
 
 /* Summary section */
 #invoiceseconddiv {

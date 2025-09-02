@@ -4,6 +4,8 @@ import { useState } from "react";
 import { useEffect } from "react";
 import axios from "axios";
 import { useRef } from "react";
+import { toast } from "react-toastify";
+
 
 const EditProfile = () => {
     const formRef = useRef(null);
@@ -99,10 +101,12 @@ const EditProfile = () => {
         { headers }
       );
       setErrmsg('Profile Edited successfully')
+      toast.success('Profile Edited Successfully',{position:'top-center'})
       setbool(true)
       
     } catch (error) {
       console.log(error);
+      toast.error(error?.response?.data?.message || 'error occured',{position:'top-center'})
       setErrmsg(error?.response?.data?.message);
     } finally {
       setloading(false);

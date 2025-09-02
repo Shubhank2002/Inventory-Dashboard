@@ -1,9 +1,16 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 
-const Searchere = () => {
+const Searchere = ({ onSearch }) => {
+  const [query, setQuery] = useState("");
+  const handleChange = (e) => {
+    const value = e.target.value;
+    setQuery(value);
+    onSearch(value); // send query up
+  };
+
   return (
     <div>
-       <style>
+      <style>
         {`
           .search-input::placeholder {
             color: rgba(255,255,255,0.6);
@@ -22,13 +29,15 @@ const Searchere = () => {
           alignItems: "center",
         }}
       >
-        <button style={{cursor:'pointer',backgroundColor:'inherit'}}>
+        <button style={{ cursor: "pointer", backgroundColor: "inherit" }}>
           <img src="/Home_assets/search_icon.png" alt="" />
         </button>
         <input
           type="text"
+          value={query}
           placeholder="Search here..."
-           className="search-input"
+          className="search-input"
+          onChange={handleChange}
           style={{
             border: "1px solid rgba(255,255,255,0.13)",
             backgroundColor: "inherit",

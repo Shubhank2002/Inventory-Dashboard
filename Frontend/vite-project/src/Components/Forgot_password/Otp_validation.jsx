@@ -3,6 +3,8 @@ import "../../Styles/Otp_validationStyles.css";
 
 import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
+import { toast } from "react-toastify";
+
 
 const Otp_validation = () => {
   const [otp, setotp] = useState('')
@@ -21,6 +23,7 @@ const Otp_validation = () => {
     try {
       const {data}=await axios.post('http://localhost:8000/auth/verify-otp',{otp})
       if(data.success && data.resettoken){
+        toast.success('OTP Validated Successfully',{position:'top-center'})
         navigate('/create_new_password',{replace:true,state:{resettoken:data.resettoken}})
       }
     } catch (error) {

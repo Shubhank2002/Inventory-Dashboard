@@ -3,6 +3,8 @@ import { Link, useNavigate } from "react-router-dom";
 import "../Styles/SignupStyles.css";
 import axios from "axios";
 import { useRef } from "react";
+import { toast } from "react-toastify";
+
 
 const Signup = () => {
   const formRef = useRef(null);
@@ -80,6 +82,7 @@ const Signup = () => {
         payload
       );
       if (data?.success) {
+        toast.success('User Created Successfully',{position:'top-center'})
         navigate("/");
       } else {
         setErrmsg("signup failed");

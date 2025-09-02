@@ -4,6 +4,8 @@ import { Form, useNavigate, useParams } from "react-router-dom";
 import Sidebar from "../Sidebar";
 import Searchere from "../Searchere";
 import axios from "axios";
+import { toast } from "react-toastify";
+
 
 
 const IndividualProduct = () => {
@@ -94,11 +96,16 @@ const IndividualProduct = () => {
           const headers = { Authorization: `Bearer ${token}` };
         const {data,status}=await axios.post('http://localhost:8000/product/single',newForm,{headers})
         if(!data.success){
+          toast.error('Upload Failed',{position:'top-center'})
             throw new Error('Upload Failed')
+            
+        }else{
+          toast.success('Product created',{position:'top-center'})
+          navigate('/dashboard/product')
         }
     } catch (error) {
         console.error(error)
-        alert('something went wrong while uploading')
+        toast.error('something went wrong while uploading',{position:'top-center'})
     }finally{
         handleDiscard()
     }

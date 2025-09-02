@@ -7,6 +7,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
 import { useEffect } from "react";
 import SmallSidebar from "../SmallSidebar";
+import { toast } from "react-toastify";
 
 const Product = () => {
   const { name } = useParams();
@@ -15,6 +16,13 @@ const Product = () => {
   const [page, setPage] = useState(1);
   const limit = 10;
   const navigate = useNavigate();
+  const [openInvoiceDialog, setOpenInvoiceDialog] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const [invoiceQty, setInvoiceQty] = useState(1);
+  const [invoiceLoading, setInvoiceLoading] = useState(false);
+
   const [showDialog1, setshowDialog1] = useState(false);
   const [showDialog2, setshowDialog2] = useState(false);
   const [csvFile, setCsvFile] = useState(null);
@@ -27,22 +35,37 @@ const Product = () => {
     if (f.size > 10 * 1024 * 1024) return "File too large (max 10MB)";
     return "";
   };
+  const handleProductRowClick = (product) => {
+    const today = new Date();
+
+    if (
+      product.availability === "Out of Stock" ||
+      (product.expiryDate && new Date(product.expiryDate) < today)
+    ) {
+      toast.error("Cannot create invoice: product is out of stock or expired");
+      return;
+    }
+
+    setSelectedProduct(product);
+    setOpenInvoiceDialog(true);
+  };
+  const fetchProducts = async () => {
+    try {
+      const token = JSON.parse(localStorage.getItem("token"));
+      const headers = { Authorization: `Bearer ${token}` };
+      const res = await axios.get(
+        `http://localhost:8000/product/getproducts?page=${page}&limit=${limit}`,
+        { headers }
+      );
+      setProducts(res.data.data);
+    } catch (err) {
+      console.error("Error fetching products:", err);
+    }
+  };
+
   useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        const token = JSON.parse(localStorage.getItem("token"));
-        const headers = { Authorization: `Bearer ${token}` };
-        const res = await axios.get(
-          `http://localhost:8000/product/getproducts?page=${page}&limit=${limit}`,
-          { headers }
-        );
-        setProducts(res.data.data);
-      } catch (err) {
-        console.error("Error fetching products:", err);
-      }
-    };
     fetchProducts();
-  }, [page, products]);
+  }, [page]);
   useEffect(() => {
     const fetchSummary = async () => {
       try {
@@ -61,6 +84,37 @@ const Product = () => {
   }, []);
   const handleAdd = (e) => {
     setshowDialog1(true);
+  };
+  const handleInvoiceSubmit = async (e) => {
+    e.preventDefault();
+
+    if (!selectedProduct || invoiceQty <= 0) {
+      return toast.error("Please enter a valid quantity");
+    }
+
+    setInvoiceLoading(true);
+    try {
+      const jsontoken = localStorage.getItem("token");
+      const token = JSON.parse(jsontoken);
+      const headers = { Authorization: `Bearer ${token}` };
+
+      await axios.post(
+        "http://localhost:8000/invoices",
+        { items: [{ productId: selectedProduct._id, quantity: invoiceQty }] },
+        { headers }
+      );
+
+      setOpenInvoiceDialog(false);
+      setInvoiceQty(1);
+      toast.success("Invoice created successfully 🎉", {
+        position: "top-center",
+      });
+    } catch (err) {
+      toast.error("Error creating invoice", { position: "top-center" });
+      console.error("Error creating invoice:", err);
+    } finally {
+      setInvoiceLoading(false);
+    }
   };
 
   const handleClose1 = () => {
@@ -106,12 +160,29 @@ const Product = () => {
       );
       if (!res.data.success)
         throw new Error(res.data?.message || "Upload failed");
-      alert(res.data.message || "Uploaded!");
+
+      toast.success(res.data.message, { position: "top-center" });
       closeDialog2();
+      fetchProducts()
     } catch (err) {
       setCsvError(err.message);
     }
   };
+  const filteredProducts =
+    searchQuery.trim() === ""
+      ? products
+      : products.filter((p) => {
+          const query = searchQuery.toLowerCase();
+          return (
+            p.name.toLowerCase().includes(query) || // match product name
+            p.price.toString().includes(query) || // match price
+            p.quantity.toString().includes(query) || // match quantity
+            p.threshold.toString().includes(query) || // match threshold
+            (p.unit && p.unit.toLowerCase().includes(query)) || // match unit
+            (p.availability && p.availability.toLowerCase().includes(query)) // match availability (In Stock, Low Stock, etc.)
+          );
+        });
+
   return (
     <div id="productcontainer">
       <Sidebar />
@@ -128,7 +199,7 @@ const Product = () => {
           >
             Product
           </h1>
-          <Searchere />
+          <Searchere onSearch={setSearchQuery} />
         </div>
         <div id="productseconddiv">
           <h1
@@ -249,8 +320,12 @@ const Product = () => {
             <div style={{ borderLeft: "1px solid grey" }}>Expiry Date</div>
             <div style={{ borderLeft: "1px solid grey" }}>Availability</div>
           </div>
-          {products.map((p) => (
-            <div className="grid_div_product_content" key={p._id}>
+          {filteredProducts.map((p) => (
+            <div
+              className="grid_div_product_content"
+              key={p._id}
+              onClick={() => handleProductRowClick(p)}
+            >
               <div>{p.name}</div>
               <div>₹{p.price}</div>
               <div>
@@ -276,7 +351,8 @@ const Product = () => {
                 <span>{p.availability}</span>
                 <button
                   className="delete-btn"
-                  onClick={async () => {
+                  onClick={async (e) => {
+                    e.stopPropagation()
                     try {
                       const token = JSON.parse(localStorage.getItem("token"));
                       const headers = { Authorization: `Bearer ${token}` };
@@ -287,12 +363,17 @@ const Product = () => {
                       setProducts((prev) =>
                         prev.filter((prod) => prod._id !== p._id)
                       );
+                      toast.success("Product deleted", {
+                        position: "top-center",
+                      });
+                      fetchProducts()
                     } catch (err) {
+                      toast.error("Error occured", { position: "top-center" });
                       console.error("Error deleting product:", err);
                     }
                   }}
                 >
-                  ✕
+                  Delete
                 </button>
               </div>
             </div>
@@ -320,6 +401,48 @@ const Product = () => {
             </button>
           </div>
         </div>
+        {openInvoiceDialog && selectedProduct && (
+          <div className="overlay" onClick={() => setOpenInvoiceDialog(false)}>
+            <div className="dialog-box" onClick={(e) => e.stopPropagation()}>
+              <h2>Create Invoice</h2>
+              <form
+                onSubmit={handleInvoiceSubmit}
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "15px",
+                }}
+              >
+                <div>
+                  <strong>Product:</strong> {selectedProduct.name}
+                </div>
+
+                <input
+                  type="number"
+                  min="1"
+                  value={invoiceQty}
+                  onChange={(e) => setInvoiceQty(e.target.value)}
+                  placeholder="Enter Quantity"
+                />
+
+                <div
+                  style={{ display: "flex", justifyContent: "space-between" }}
+                >
+                  <button
+                    type="button"
+                    onClick={() => setOpenInvoiceDialog(false)}
+                  >
+                    Cancel
+                  </button>
+                  <button type="submit" disabled={invoiceLoading}>
+                    {invoiceLoading ? "Creating..." : "Create"}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
         {showDialog1 && (
           <div className="overlay" onClick={handleClose1}>
             <div

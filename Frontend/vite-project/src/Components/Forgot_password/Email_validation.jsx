@@ -3,6 +3,8 @@ import "../../Styles/Email_validationStyles.css";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { useRef } from "react";
+import { toast } from "react-toastify";
+
 
 const Email_validation = () => {
   const formRef=useRef(null)
@@ -39,6 +41,7 @@ const Email_validation = () => {
     try {
       const response=await axios.post('http://localhost:8000/auth/forgot-password',{email:input.trim().toLowerCase()})
       if(response.data.success && response.data.otpSent){
+        toast.success('Email validated successfully',{position:'top-center'})
         navigate('/otp_validation')
       }else{
         return seterrMsg(response.data.message)
