@@ -435,7 +435,7 @@ const Product = () => {
                     Cancel
                   </button>
                   <button type="submit" disabled={invoiceLoading}>
-                    {invoiceLoading ? "Creating..." : "Create"}
+                    {invoiceLoading ? "Ordering..." : "Order"}
                   </button>
                 </div>
               </form>
