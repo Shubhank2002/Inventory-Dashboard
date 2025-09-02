@@ -94,7 +94,7 @@ const IndividualProduct = () => {
         const jsontoken = localStorage.getItem("token");
           const token = JSON.parse(jsontoken);
           const headers = { Authorization: `Bearer ${token}` };
-        const {data,status}=await axios.post('http://localhost:8000/product/single',newForm,{headers})
+        const {data,status}=await axios.post('https://inventory-dashboard-backend-hxjm.onrender.com/product/single',newForm,{headers})
         if(!data.success){
           toast.error('Upload Failed',{position:'top-center'})
             throw new Error('Upload Failed')

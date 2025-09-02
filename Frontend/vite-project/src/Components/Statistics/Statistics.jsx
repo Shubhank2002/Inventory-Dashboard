@@ -18,7 +18,7 @@ const Statistics = () => {
       const headers = { Authorization: `Bearer ${token}` };
 
       const revenueRes = await axios.get(
-        "http://localhost:8000/other/revenue-stock",
+        "https://inventory-dashboard-backend-hxjm.onrender.com/other/revenue-stock",
         { headers }
       );
 

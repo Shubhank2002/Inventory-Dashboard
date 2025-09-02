@@ -29,7 +29,7 @@ const Home = () => {
         const headers = { Authorization: `Bearer ${token}` };
 
         const { data } = await axios.get(
-          "http://localhost:8000/dashboard/summary",
+          "https://inventory-dashboard-backend-hxjm.onrender.com/dashboard/summary",
           { headers }
         );
         setSummary(data);

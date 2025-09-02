@@ -39,7 +39,7 @@ const Email_validation = () => {
     
     setloading(true)
     try {
-      const response=await axios.post('http://localhost:8000/auth/forgot-password',{email:input.trim().toLowerCase()})
+      const response=await axios.post('https://inventory-dashboard-backend-hxjm.onrender.com/auth/forgot-password',{email:input.trim().toLowerCase()})
       if(response.data.success && response.data.otpSent){
         toast.success('Email validated successfully',{position:'top-center'})
         navigate('/otp_validation')

@@ -12,7 +12,7 @@ const TopProducts = () => {
         const token = JSON.parse(jsontoken);
         const headers = { Authorization: `Bearer ${token}` };
 
-        const { data } = await axios.get("http://localhost:8000/other/top-products", { headers });
+        const { data } = await axios.get("https://inventory-dashboard-backend-hxjm.onrender.com/other/top-products", { headers });
         setProducts(data.topProducts || []);
       } catch (err) {
         console.error("Error fetching top products:", err);

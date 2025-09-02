@@ -22,7 +22,7 @@ const SalesPurchaseChart = () => {
       const headers = { Authorization: `Bearer ${token}` };
 
       const { data } = await axios.get(
-        `http://localhost:8000/other/sales-purchase?period=${period}`,
+        `https://inventory-dashboard-backend-hxjm.onrender.com/other/sales-purchase?period=${period}`,
         { headers }
       );
 

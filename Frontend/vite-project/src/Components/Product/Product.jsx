@@ -54,7 +54,7 @@ const Product = () => {
       const token = JSON.parse(localStorage.getItem("token"));
       const headers = { Authorization: `Bearer ${token}` };
       const res = await axios.get(
-        `http://localhost:8000/product/getproducts?page=${page}&limit=${limit}`,
+        `https://inventory-dashboard-backend-hxjm.onrender.com/product/getproducts?page=${page}&limit=${limit}`,
         { headers }
       );
       setProducts(res.data.data);
@@ -72,7 +72,7 @@ const Product = () => {
         const token = JSON.parse(localStorage.getItem("token"));
         const headers = { Authorization: `Bearer ${token}` };
         const { data } = await axios.get(
-          "http://localhost:8000/product/summary",
+          "https://inventory-dashboard-backend-hxjm.onrender.com/product/summary",
           { headers }
         );
         setSummary(data);
@@ -99,7 +99,7 @@ const Product = () => {
       const headers = { Authorization: `Bearer ${token}` };
 
       await axios.post(
-        "http://localhost:8000/invoices",
+        "https://inventory-dashboard-backend-hxjm.onrender.com/invoices",
         { items: [{ productId: selectedProduct._id, quantity: invoiceQty }] },
         { headers }
       );
@@ -154,7 +154,7 @@ const Product = () => {
       const headers = { Authorization: `Bearer ${token}` };
       // TODO: point to your backend route
       const res = await axios.post(
-        "http://localhost:8000/product/multiple",
+        "https://inventory-dashboard-backend-hxjm.onrender.com/product/multiple",
         fd,
         { headers }
       );

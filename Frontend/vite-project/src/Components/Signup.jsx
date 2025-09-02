@@ -78,7 +78,7 @@ const Signup = () => {
         email: Form.email.trim().toLowerCase(),
       };
       const { data } = await axios.post(
-        "http://localhost:8000/auth/signup",
+        "https://inventory-dashboard-backend-hxjm.onrender.com/auth/signup",
         payload
       );
       if (data?.success) {

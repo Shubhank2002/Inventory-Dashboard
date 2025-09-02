@@ -34,7 +34,7 @@ const Create_New_password = () => {
     setloading(true);
     try {
       const { data, status } = await axios.post(
-        "http://localhost:8000/auth/reset-password",
+        "https://inventory-dashboard-backend-hxjm.onrender.com/auth/reset-password",
         { password: Form.password, resettoken }
       );
       if (data.success && status === 200) {

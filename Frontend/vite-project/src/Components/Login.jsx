@@ -57,7 +57,7 @@ const Login = () => {
         password: Form.password,
       };
       const { data } = await axios.post(
-        "http://localhost:8000/auth/login",
+        "https://inventory-dashboard-backend-hxjm.onrender.com/auth/login",
         Form
       );
       if (data?.success) {

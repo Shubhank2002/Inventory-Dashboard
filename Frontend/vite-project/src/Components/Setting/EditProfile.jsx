@@ -96,7 +96,7 @@ const EditProfile = () => {
       const token = JSON.parse(jsontoken);
       const headers = { Authorization: `Bearer ${token}` };
       const { data } = await axios.post(
-        "http://localhost:8000/other/edit-profile",
+        "https://inventory-dashboard-backend-hxjm.onrender.com/other/edit-profile",
         new_form,
         { headers }
       );

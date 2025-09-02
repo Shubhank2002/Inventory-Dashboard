@@ -21,7 +21,7 @@ const Otp_validation = () => {
     }
     setloading(true)
     try {
-      const {data}=await axios.post('http://localhost:8000/auth/verify-otp',{otp})
+      const {data}=await axios.post('https://inventory-dashboard-backend-hxjm.onrender.com/auth/verify-otp',{otp})
       if(data.success && data.resettoken){
         toast.success('OTP Validated Successfully',{position:'top-center'})
         navigate('/create_new_password',{replace:true,state:{resettoken:data.resettoken}})

@@ -38,9 +38,9 @@ const Invoice = () => {
       const headers = { Authorization: `Bearer ${token}` };
 
       const [summaryRes, invoicesRes] = await Promise.all([
-        axios.get("http://localhost:8000/invoices/summary", { headers }),
+        axios.get("https://inventory-dashboard-backend-hxjm.onrender.com/invoices/summary", { headers }),
         axios.get(
-          `http://localhost:8000/invoices?page=${page}&limit=${limit}`,
+          `https://inventory-dashboard-backend-hxjm.onrender.com/invoices?page=${page}&limit=${limit}`,
           { headers }
         ),
       ]);
@@ -126,7 +126,7 @@ const Invoice = () => {
     try {
       const token = JSON.parse(localStorage.getItem("token"));
       const headers = { Authorization: `Bearer ${token}` };
-      const { data } = await axios.get(`http://localhost:8000/invoices/${id}`, {
+      const { data } = await axios.get(`https://inventory-dashboard-backend-hxjm.onrender.com/invoices/${id}`, {
         headers,
       });
       setSelectedInvoice(data.data);
@@ -151,7 +151,7 @@ const Invoice = () => {
       const headers = { Authorization: `Bearer ${token}` };
 
       await axios.post(
-        "http://localhost:8000/invoices",
+        "https://inventory-dashboard-backend-hxjm.onrender.com/invoices",
         { items: [{ productId, quantity }] },
         { headers }
       );
@@ -178,7 +178,7 @@ const Invoice = () => {
       const headers = { Authorization: `Bearer ${token}` };
 
       const res = await axios.patch(
-        `http://localhost:8000/invoices/${id}/pay`,
+        `https://inventory-dashboard-backend-hxjm.onrender.com/invoices/${id}/pay`,
         {},
         { headers }
       );
@@ -209,7 +209,7 @@ const Invoice = () => {
           const token = JSON.parse(localStorage.getItem("token"));
           const headers = { Authorization: `Bearer ${token}` };
           const res = await axios.get(
-            "http://localhost:8000/product/getproducts",
+            "https://inventory-dashboard-backend-hxjm.onrender.com/product/getproducts",
             { headers }
           );
           setProducts(res.data.data || []);
@@ -227,7 +227,7 @@ const Invoice = () => {
       const jsontoken = localStorage.getItem("token");
       const token = JSON.parse(jsontoken);
       const headers = { Authorization: `Bearer ${token}` };
-      await axios.delete(`http://localhost:8000/invoices/${id}/delete`, {
+      await axios.delete(`https://inventory-dashboard-backend-hxjm.onrender.com/invoices/${id}/delete`, {
         headers,
       });
       setInvoices((prev) => prev.filter((inv) => inv._id !== id));
