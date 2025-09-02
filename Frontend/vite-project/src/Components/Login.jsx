@@ -65,6 +65,7 @@ const Login = () => {
         localStorage.setItem("token", JSON.stringify(data.token));
         toast.success("Login successful! 🎉",{position:'top-center'});
         navigate("/dashboard/home");
+        setForm(initial_state)
       } else {
         setErrmsg("Sign in failed");
          toast.error(data.message+' ❌' || "Login failed ❌",{position:'top-center'});
