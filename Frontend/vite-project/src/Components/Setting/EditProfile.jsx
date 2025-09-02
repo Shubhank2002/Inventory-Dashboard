@@ -120,7 +120,7 @@ const EditProfile = () => {
   const logout = () => {
     localStorage.removeItem("token"); // remove JWT
     localStorage.removeItem("user"); // if you stored user details
-   navigate('/login')   // redirect to login page
+   navigate('/')   // redirect to login page
   };
 
   return (
